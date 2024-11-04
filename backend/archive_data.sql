@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS LOANS;
 DROP TABLE IF EXISTS STAFF;
 DROP TABLE IF EXISTS FINES;
 DROP TABLE IF EXISTS RESERVATIONS;
+
 -- --------------------------------------------------------
 -- ***************************
 -- Part A
@@ -59,7 +60,6 @@ CREATE TABLE LOANS (
     FOREIGN KEY (BookId) REFERENCES BOOKS(BookId) ON DELETE SET NULL,
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL
 )ENGINE=InnoDB;
-
 
 -- --------------------------------------------------------
 
@@ -124,7 +124,7 @@ INSERT INTO BOOKS (BookID, Title, Author, ISBN, Genre, PublicationDate, Availabl
 (9, 'Brave New World', 'Aldous Huxley', '9780060850524', 'Dystopian', '1932-01-01', 2, 10),
 (10, 'The Iliad', 'Homer', '9780140275360', 'Epic', '1963-01-15', 5, 10);
 
--- Members
+-- MEMBERS
 INSERT INTO MEMBERS (MemberID, Name, Email, PhoneNumber, Address, MembershipType, JoinDate) VALUES
 (1, 'Alice Johnson', 'alice@example.com', '1234567890', '123 Maple St.', 'Standard', '2023-01-15'),
 (2, 'Bob Smith', 'bob.smith@example.com', '0987654321', '456 Oak Ave.', 'Premium', '2023-02-20'),
@@ -137,7 +137,7 @@ INSERT INTO MEMBERS (MemberID, Name, Email, PhoneNumber, Address, MembershipType
 (9, 'Irene James', 'irene.j@example.com', '5678901234', '606 Poplar St.', 'Premium', '2023-04-25'),
 (10, 'John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
 
--- Loans
+-- LOANS
 INSERT INTO LOANS (LoanID, BookID, MemberID, LoanDate, DueDate, ReturnDate) VALUES
 (1, 1, 2, '2023-04-01', '2023-04-15', '2023-04-14'),
 (2, 3, 1, '2023-04-03', '2023-04-17', NULL),
@@ -150,7 +150,7 @@ INSERT INTO LOANS (LoanID, BookID, MemberID, LoanDate, DueDate, ReturnDate) VALU
 (9, 9, 9, '2023-04-16', '2023-04-30', '2023-04-30'),
 (10, 10, 10, '2023-04-17', '2023-05-01', NULL);
 
--- Staff
+-- STAFF
 INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
 (1, 'David Brown', 'david@example.com', 'Librarian', 'dbrown', 'hashed_password1'),
 (2, 'Emily Green', 'emily@example.com', 'Assistant', 'egreen', 'hashed_password2'),
@@ -176,7 +176,7 @@ INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate
 (9, 9, 9, 5.00, 'Paid', '2023-04-30'),
 (10, 10, 10, 8.00, 'Unpaid', NULL);
 
--- Reservation
+-- RESERVATIONS
 INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
 (1, 1, 3, '2023-05-10', 'Pending'),
 (2, 2, 1, '2023-05-11', 'Fulfilled'),
@@ -199,10 +199,10 @@ INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Stat
  authors, the member’s name who borrowed each book, and the loan date.
    ********************************
 */
-SELECT Books.Title, Books.Author, Members.Name AS MemberName, Loans.LoanDate
-FROM Loans
-JOIN Books ON Loans.BookID = Books.BookID
-JOIN Members ON Loans.MemberID = Members.MemberID;
+SELECT BOOKS.Title, BOOKS.Author, MEMBERS.Name AS MemberName, LOANS.LoanDate
+FROM LOANS
+JOIN BOOKS ON LOANS.BookID = BOOKS.BookID
+JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID;
 
 /* ********************************
  Query 2:Nested Query with IN, ANY, or ALL and GROUP BY
@@ -210,17 +210,17 @@ JOIN Members ON Loans.MemberID = Members.MemberID;
    ********************************
 */
 
-/* ********************************
+ /* ********************************
  Query 3: Correlated Nested Query with Aliasing
  Purpose: Retrieve the names of members who have an overdue loan (Loan Due Date < Current Date).
  Expected Result: A list of member names with overdue loans.
    ********************************
 */
 SELECT M.Name
-FROM Members M
+FROM MEMBERS M
 WHERE EXISTS (
     SELECT 1
-    FROM Loans L
+    FROM LOANS L
     WHERE L.MemberID = M.MemberID
     AND L.DueDate < CURDATE()
     AND L.ReturnDate IS NULL
@@ -233,10 +233,6 @@ WHERE EXISTS (
  Expected Result: A list of book titles and reservation status (NULL if no reservation exists).
    ********************************
 */
-/* SELECT B.Title, R.Status AS ReservationStatus
-FROM Books B
-FULL OUTER JOIN Reservation R ON B.BookID = R.BookID; */
--- for MySQL
 SELECT B.Title, R.Status AS ReservationStatus
 FROM BOOKS B
 LEFT JOIN RESERVATIONS R ON B.BookID = R.BookID
@@ -252,11 +248,11 @@ LIMIT 0, 25;
  Expected Result: Names of members with at least one paid and one unpaid fine.
    ********************************
 */
-SELECT Name FROM Members
+SELECT Name FROM MEMBERS
 WHERE MemberID IN (
-    (SELECT MemberID FROM Fines WHERE FineStatus = 'Paid')
+    (SELECT MemberID FROM FINES WHERE FineStatus = 'Paid')
     INTERSECT
-    (SELECT MemberID FROM Fines WHERE FineStatus = 'Unpaid')
+    (SELECT MemberID FROM FINES WHERE FineStatus = 'Unpaid')
 );
 
 /* ********************************
@@ -266,11 +262,12 @@ WHERE MemberID IN (
    ********************************
 */
 SELECT B.Title, COUNT(L.LoanID) AS BorrowCount
-FROM Books B
-JOIN Loans L ON B.BookID = L.BookID
+FROM BOOKS B
+JOIN LOANS L ON B.BookID = L.BookID
 GROUP BY B.Title
 ORDER BY BorrowCount DESC
 LIMIT 3;
+
 /* ********************************
  Query 7: Non-Trivial Query Using Two Tables
  Purpose: Retrieve names of members and the total amount of fines they owe (unpaid fines). 
@@ -278,8 +275,8 @@ LIMIT 3;
    ********************************
 */
 SELECT M.Name, SUM(F.FineAmount) AS TotalUnpaidFines
-FROM Members M
-JOIN Fines F ON M.MemberID = F.MemberID
+FROM MEMBERS M
+JOIN FINES F ON M.MemberID = F.MemberID
 WHERE F.FineStatus = 'Unpaid'
 GROUP BY M.Name;
 
@@ -290,8 +287,8 @@ GROUP BY M.Name;
    ********************************
 */
 SELECT M.Name
-FROM Members M
-LEFT JOIN Loans L ON M.MemberID = L.MemberID
+FROM MEMBERS M
+LEFT JOIN LOANS L ON M.MemberID = L.MemberID
 WHERE L.LoanID IS NULL;
 
 /* ********************************
@@ -302,9 +299,10 @@ WHERE L.LoanID IS NULL;
    ********************************
 */
 SELECT L.LoanID, M.Name AS MemberName, S.Name AS StaffName, S.Role
-FROM Loans L
-JOIN Members M ON L.MemberID = M.MemberID
-LEFT JOIN Staff S ON L.LoanID = S.StaffID;
+FROM LOANS L
+JOIN MEMBERS M ON L.MemberID = M.MemberID
+LEFT JOIN STAFF S ON L.LoanID = S.StaffID;
+
 /* ********************************
  Query 10: Non-Trivial Query Using Three Tables with Aliasing
  Purpose: Find members who have reserved a book but have not yet borrowed it. 
