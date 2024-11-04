@@ -316,3 +316,86 @@ JOIN MEMBERS M ON R.MemberID = M.MemberId
 LEFT JOIN LOANS L ON R.BookID = L.BookID AND R.MemberID = L.MemberID
 WHERE R.Status = 'Pending' AND L.LoanID IS NULL
 LIMIT 0, 25;
+
+/* Faith: Last five queries from Part C, */
+
+/* ********************************
+ Query 6: Non-Trivial Query Using Two Tables
+ Purpose: Display the members with the highest fine amount.
+ Expected Result: Retrieves list of members with highest total fine amount.
+ in descending order by the number of reservations.
+   ********************************
+*/
+SELECT m.Name AS MemberName, SUM(f.FineAmount) AS TotalFineAmount
+FROM MEMBERS m, FINES f
+WHERE m.MemberId = f.MemberId
+GROUP BY m.MemberId
+HAVING SUM(f.FineAmount) = (
+    SELECT MAX(SUM(FineAmount))
+    FROM FINES
+    GROUP BY MemberId
+);
+
+/* ********************************
+ Query 7: Non-Trivial Query Using Two Tables
+ Purpose: Finds the titles of books borrowed by members within the last 30 days.
+ Expected Result: Retrieves the names of members who have borrowed books within timeframe.
+   ********************************
+*/
+SELECT m.Name AS MemberName, b.Title AS BookTitle
+FROM MEMBERS m, LOANS l
+WHERE m.MemberId = l.MemberId
+  AND l.BookId = b.BookId
+  AND l.LoanDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);
+
+/* ********************************
+ Query 8: Non-Trivial Query Using Two Tables
+ Purpose: Finds the most popular books by members with outstanding fees.
+ Expected Result: Lists the titles of books borrowed by members with outstanding fees
+ and the count of times each has been borrowed by such members.
+   ********************************
+*/
+SELECT b.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
+FROM BOOKS b, LOANS l
+WHERE b.BookId = l.BookId
+  AND l.MemberId IN (
+      SELECT f.MemberId
+      FROM FINES f
+      WHERE f.PaidStatus = 'Unpaid'
+  )
+GROUP BY b.BookId
+ORDER BY BorrowCount DESC;
+
+/* ********************************
+ Query 9:Non-Trivial Query Using Three Tables
+ Purpose: FInds details of overdue books with member and staff information.
+ Expected Result: Retrieves the list of titles, authors of overdue books, the names
+ of the members who borrowed them, and the staff members who processed the loans.
+   ********************************
+*/
+SELECT b.Title AS BookTitle, b.Author AS Author,
+       m.Name AS MemberName,
+       s.Name AS StaffName, s.Role AS StaffRole
+FROM BOOKS b, LOANS l, MEMBERS m, STAFF s
+WHERE b.BookId = l.BookId
+  AND l.MemberId = m.MemberId
+  AND l.StaffId = s.StaffId
+  AND l.DueDate < CURRENT_DATE
+ORDER BY l.DueDate ASC;
+
+/* ********************************
+ Query 10: Non-Trivial Query Using Three Tables with Aliasing
+ Purpose: Member loan details with member and staff information.
+ Expected Result: Retrieves the name of the borrowed, the title and author of
+ the books borrowed, and the name of the staff member facilitating the loan.
+   ********************************
+*/
+SELECT b.Title AS BookTitle,
+    b.Author AS BookAuthor,
+    m.Name AS MemberName,
+    s.Name AS StaffName
+FROM BOOKS AS b
+JOIN LOANS AS l ON b.BookId = l.BookId
+JOIN MEMBERS AS m ON l.MemberId = m.MemberId
+JOIN STAFF AS s ON l.StaffId = s.StaffId
+WHERE l.ReturnDate IS NULL;
