@@ -19,7 +19,7 @@ CREATE TABLE BOOKS (
     Author VARCHAR(128) NOT NULL,
     ISBN VARCHAR(13) NOT NULL,
     Genre VARCHAR(64) NOT NULL,
-    PublicationDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PublicationDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     AvailableCopies INT DEFAULT NULL,
     TotalCopies INT DEFAULT NULL,
     PRIMARY KEY (BookId),
@@ -112,7 +112,7 @@ CREATE TABLE RESERVATIONS (
 -- Part B
 -- ***************************
 -- Insert------------------------------------------------------
-INSERT INTO Books (BookID, Title, Author, ISBN, Genre, PublicationDate, AvailableCopies, TotalCopies) VALUES
+INSERT INTO BOOKS (BookID, Title, Author, ISBN, Genre, PublicationDate, AvailableCopies, TotalCopies) VALUES
 (1, 'The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 'Fiction', '1925-04-10', 5, 10),
 (2, '1984', 'George Orwell', '9780451524935', 'Dystopian', '1949-06-08', 3, 10),
 (3, 'To Kill a Mockingbird', 'Harper Lee', '9780061120084', 'Fiction', '1960-07-11', 4, 10),
@@ -120,12 +120,12 @@ INSERT INTO Books (BookID, Title, Author, ISBN, Genre, PublicationDate, Availabl
 (5, 'War and Peace', 'Leo Tolstoy', '9781420951080', 'Historical', '1869-01-01', 6, 10),
 (6, 'Pride and Prejudice', 'Jane Austen', '9781503290563', 'Romance', '1813-01-28', 8, 10),
 (7, 'The Catcher in the Rye', 'J.D. Salinger', '9780316769488', 'Fiction', '1951-07-16', 3, 10),
-(8, 'The Odyssey', 'Homer', '9780140268867', 'Epic', NULL, 7, 10),
+(8, 'The Odyssey', 'Homer', '9780140268867', 'Epic', '1952-08-30', 7, 10),
 (9, 'Brave New World', 'Aldous Huxley', '9780060850524', 'Dystopian', '1932-01-01', 2, 10),
-(10, 'The Iliad', 'Homer', '9780140275360', 'Epic', NULL, 5, 10);
+(10, 'The Iliad', 'Homer', '9780140275360', 'Epic', '1963-01-15', 5, 10);
 
 -- Members
-INSERT INTO Members (MemberID, Name, Email, PhoneNumber, Address, MembershipType, JoinDate) VALUES
+INSERT INTO MEMBERS (MemberID, Name, Email, PhoneNumber, Address, MembershipType, JoinDate) VALUES
 (1, 'Alice Johnson', 'alice@example.com', '1234567890', '123 Maple St.', 'Standard', '2023-01-15'),
 (2, 'Bob Smith', 'bob.smith@example.com', '0987654321', '456 Oak Ave.', 'Premium', '2023-02-20'),
 (3, 'Carol White', 'carol.white@example.com', '9876543210', '789 Birch Blvd.', 'Standard', '2023-03-12'),
@@ -138,7 +138,7 @@ INSERT INTO Members (MemberID, Name, Email, PhoneNumber, Address, MembershipType
 (10, 'John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
 
 -- Loans
-INSERT INTO Loans (LoanID, BookID, MemberID, LoanDate, DueDate, ReturnDate) VALUES
+INSERT INTO LOANS (LoanID, BookID, MemberID, LoanDate, DueDate, ReturnDate) VALUES
 (1, 1, 2, '2023-04-01', '2023-04-15', '2023-04-14'),
 (2, 3, 1, '2023-04-03', '2023-04-17', NULL),
 (3, 2, 3, '2023-04-05', '2023-04-19', '2023-04-18'),
@@ -151,7 +151,7 @@ INSERT INTO Loans (LoanID, BookID, MemberID, LoanDate, DueDate, ReturnDate) VALU
 (10, 10, 10, '2023-04-17', '2023-05-01', NULL);
 
 -- Staff
-INSERT INTO Staff (StaffID, Name, Email, Role, Username, Password) VALUES
+INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
 (1, 'David Brown', 'david@example.com', 'Librarian', 'dbrown', 'hashed_password1'),
 (2, 'Emily Green', 'emily@example.com', 'Assistant', 'egreen', 'hashed_password2'),
 (3, 'Frank Hill', 'frank@example.com', 'Administrator', 'fhill', 'hashed_password3'),
@@ -164,7 +164,7 @@ INSERT INTO Staff (StaffID, Name, Email, Role, Username, Password) VALUES
 (10, 'Mark Red', 'mark@example.com', 'Librarian', 'mred', 'hashed_password10');
 
 -- FINES
-INSERT INTO Fines (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate) VALUES
+INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate) VALUES
 (1, 2, 1, 5.00, 'Paid', '2023-04-16'),
 (2, 1, 2, 10.00, 'Unpaid', NULL),
 (3, 3, 3, 3.00, 'Paid', '2023-04-19'),
@@ -177,7 +177,7 @@ INSERT INTO Fines (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate
 (10, 10, 10, 8.00, 'Unpaid', NULL);
 
 -- Reservation
-INSERT INTO Reservations (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
+INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
 (1, 1, 3, '2023-05-10', 'Pending'),
 (2, 2, 1, '2023-05-11', 'Fulfilled'),
 (3, 3, 2, '2023-05-12', 'Pending'),
