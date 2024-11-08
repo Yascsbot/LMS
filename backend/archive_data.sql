@@ -3,8 +3,8 @@
 -- Drop tables if they exist
 DROP TABLE IF EXISTS BOOKS;
 DROP TABLE IF EXISTS MEMBERS;
-DROP TABLE IF EXISTS LOANS;
 DROP TABLE IF EXISTS STAFF;
+DROP TABLE IF EXISTS LOANS;
 DROP TABLE IF EXISTS FINES;
 DROP TABLE IF EXISTS RESERVATIONS;
 
@@ -46,22 +46,6 @@ CREATE TABLE MEMBERS (
 )ENGINE=InnoDB;
 
 -- --------------------------------------------------------
--- change ReturnDate to view
--- Table structure for table LOANS
-
-CREATE TABLE LOANS (
-    LoanId INT NOT NULL AUTO_INCREMENT,
-    BookId INT,
-    MemberId INT,
-    LoanDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    DueDate TIMESTAMP NOT NULL,
-    ReturnDate DATETIME DEFAULT NULL,
-    PRIMARY KEY (LoanId),
-    FOREIGN KEY (BookId) REFERENCES BOOKS(BookId) ON DELETE SET NULL,
-    FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL
-)ENGINE=InnoDB;
-
--- --------------------------------------------------------
 
 -- Table structure for table STAFF
 
@@ -78,6 +62,26 @@ CREATE TABLE STAFF (
 )ENGINE=InnoDB;
 
 -- --------------------------------------------------------
+
+-- --------------------------------------------------------
+-- change ReturnDate to view
+-- Table structure for table LOANS
+
+CREATE TABLE LOANS (
+    LoanId INT NOT NULL AUTO_INCREMENT,
+    BookId INT,
+    MemberId INT,
+    StaffID INT,
+    LoanDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    DueDate TIMESTAMP NOT NULL,
+    ReturnDate DATETIME DEFAULT NULL,
+    PRIMARY KEY (LoanId),
+    FOREIGN KEY (BookId) REFERENCES BOOKS(BookId) ON DELETE SET NULL,
+    FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL,
+    FOREIGN KEY (StaffID) REFERENCES STAFF(StaffID) ON DELETE SET NULL
+)ENGINE=InnoDB;
+
+
 
 -- Table structure for table FINES
 
@@ -137,19 +141,6 @@ INSERT INTO MEMBERS (MemberID, Name, Email, PhoneNumber, Address, MembershipType
 (9, 'Irene James', 'irene.j@example.com', '5678901234', '606 Poplar St.', 'Premium', '2023-04-25'),
 (10, 'John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
 
--- LOANS
-INSERT INTO LOANS (LoanID, BookID, MemberID, LoanDate, DueDate, ReturnDate) VALUES
-(1, 1, 2, '2023-04-01', '2023-04-15', '2023-04-14'),
-(2, 3, 1, '2023-04-03', '2023-04-17', NULL),
-(3, 2, 3, '2023-04-05', '2023-04-19', '2023-04-18'),
-(4, 5, 4, '2023-04-10', '2023-04-24', NULL),
-(5, 6, 5, '2023-04-12', '2023-04-26', '2023-04-25'),
-(6, 4, 6, '2023-04-13', '2023-04-27', '2023-04-26'),
-(7, 7, 7, '2023-04-14', '2023-04-28', NULL),
-(8, 8, 8, '2023-04-15', '2023-04-29', NULL),
-(9, 9, 9, '2023-04-16', '2023-04-30', '2023-04-30'),
-(10, 10, 10, '2023-04-17', '2023-05-01', NULL);
-
 -- STAFF
 INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
 (1, 'David Brown', 'david@example.com', 'Librarian', 'dbrown', 'hashed_password1'),
@@ -162,6 +153,19 @@ INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
 (8, 'Kyle White', 'kyle@example.com', 'Technician', 'kwhite', 'hashed_password8'),
 (9, 'Lisa Blue', 'lisa@example.com', 'Administrator', 'lblue', 'hashed_password9'),
 (10, 'Mark Red', 'mark@example.com', 'Librarian', 'mred', 'hashed_password10');
+
+-- LOANS
+INSERT INTO LOANS (LoanID, BookID, MemberID, StaffID, LoanDate, DueDate, ReturnDate) VALUES
+(1, 1, 2, 2, '2023-04-01', '2023-04-15', '2023-04-14'),
+(2, 3, 1, 5, '2023-04-03', '2023-04-17', NULL),
+(3, 2, 3, 3, '2023-04-05', '2023-04-19', '2023-04-18'),
+(4, 5, 4, 1, '2023-04-10', '2023-04-24', NULL),
+(5, 6, 5, 10, '2023-04-12', '2023-04-26', '2023-04-25'),
+(6, 4, 6, 9, '2023-04-13', '2023-04-27', '2023-04-26'),
+(7, 7, 7, 2, '2023-04-14', '2023-04-28', NULL),
+(8, 8, 8, 4, '2023-04-15', '2023-04-29', NULL),
+(9, 9, 9, 6, '2023-04-16', '2023-04-30', '2023-04-30'),
+(10, 10, 10, 2, '2023-04-17', '2023-05-01', NULL);
 
 -- FINES
 INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate) VALUES
@@ -255,68 +259,6 @@ WHERE MemberID IN (
     (SELECT MemberID FROM FINES WHERE FineStatus = 'Unpaid')
 );
 
-/* ********************************
- Query 6: Non-Trivial Query Using Two Tables
- Purpose: Find the top 3 most frequently borrowed books by title. 
- Expected Result: Titles of the top 3 most borrowed books, ranked by number of loans.
-   ********************************
-*/
-SELECT B.Title, COUNT(L.LoanID) AS BorrowCount
-FROM BOOKS B
-JOIN LOANS L ON B.BookID = L.BookID
-GROUP BY B.Title
-ORDER BY BorrowCount DESC
-LIMIT 3;
-
-/* ********************************
- Query 7: Non-Trivial Query Using Two Tables
- Purpose: Retrieve names of members and the total amount of fines they owe (unpaid fines). 
- Expected Result: A list of member names with the total unpaid fines amount for each.
-   ********************************
-*/
-SELECT M.Name, SUM(F.FineAmount) AS TotalUnpaidFines
-FROM MEMBERS M
-JOIN FINES F ON M.MemberID = F.MemberID
-WHERE F.FineStatus = 'Unpaid'
-GROUP BY M.Name;
-
-/* ********************************
- Query 8: Non-Trivial Query Using Two Tables
- Purpose: List all members who have never borrowed a book. 
- Expected Result: A list of member names who have no records in the Loans table.
-   ********************************
-*/
-SELECT M.Name
-FROM MEMBERS M
-LEFT JOIN LOANS L ON M.MemberID = L.MemberID
-WHERE L.LoanID IS NULL;
-
-/* ********************************
- Query 9:Non-Trivial Query Using Three Tables
- Purpose: Show the staff member’s name and role for each loan transaction, along with the name of
- the member who borrowed the book. 
- Expected Result: List of loans with the names of the borrower and the staff member overseeing the loan.
-   ********************************
-*/
-SELECT L.LoanID, M.Name AS MemberName, S.Name AS StaffName, S.Role
-FROM LOANS L
-JOIN MEMBERS M ON L.MemberID = M.MemberID
-LEFT JOIN STAFF S ON L.LoanID = S.StaffID;
-
-/* ********************************
- Query 10: Non-Trivial Query Using Three Tables with Aliasing
- Purpose: Find members who have reserved a book but have not yet borrowed it. 
- Expected Result: Names of members who currently have pending reservations but no loans.
-   ********************************
-*/
-SELECT M.Name AS ReservedMember, B.Title AS ReservedBook
-FROM RESERVATIONS R
-JOIN BOOKS B ON R.BookID = B.BookID
-JOIN MEMBERS M ON R.MemberID = M.MemberId
-LEFT JOIN LOANS L ON R.BookID = L.BookID AND R.MemberID = L.MemberID
-WHERE R.Status = 'Pending' AND L.LoanID IS NULL
-LIMIT 0, 25;
-
 /* Faith: Last five queries from Part C, */
 
 /* ********************************
@@ -327,14 +269,18 @@ LIMIT 0, 25;
    ********************************
 */
 SELECT m.Name AS MemberName, SUM(f.FineAmount) AS TotalFineAmount
-FROM MEMBERS m, FINES f
-WHERE m.MemberId = f.MemberId
+FROM MEMBERS m
+JOIN FINES f ON m.MemberId = f.MemberId
 GROUP BY m.MemberId
 HAVING SUM(f.FineAmount) = (
-    SELECT MAX(SUM(FineAmount))
-    FROM FINES
-    GROUP BY MemberId
+    SELECT MAX(MemberTotalFine)
+    FROM (
+        SELECT MemberId, SUM(FineAmount) AS MemberTotalFine
+        FROM FINES
+        GROUP BY MemberId
+    ) AS FineTotals
 );
+
 
 /* ********************************
  Query 7: Non-Trivial Query Using Two Tables
@@ -343,7 +289,7 @@ HAVING SUM(f.FineAmount) = (
    ********************************
 */
 SELECT m.Name AS MemberName, b.Title AS BookTitle
-FROM MEMBERS m, LOANS l
+FROM MEMBERS m, LOANS l, BOOKS b
 WHERE m.MemberId = l.MemberId
   AND l.BookId = b.BookId
   AND l.LoanDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);
@@ -361,7 +307,7 @@ WHERE b.BookId = l.BookId
   AND l.MemberId IN (
       SELECT f.MemberId
       FROM FINES f
-      WHERE f.PaidStatus = 'Unpaid'
+      WHERE f.FineStatus = 'Unpaid'
   )
 GROUP BY b.BookId
 ORDER BY BorrowCount DESC;
