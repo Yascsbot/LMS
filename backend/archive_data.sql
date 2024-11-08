@@ -165,7 +165,8 @@ INSERT INTO LOANS (LoanID, BookID, MemberID, StaffID, LoanDate, DueDate, ReturnD
 (7, 7, 7, 2, '2023-04-14', '2023-04-28', NULL),
 (8, 8, 8, 4, '2023-04-15', '2023-04-29', NULL),
 (9, 9, 9, 6, '2023-04-16', '2023-04-30', '2023-04-30'),
-(10, 10, 10, 2, '2023-04-17', '2023-05-01', NULL);
+(10, 9, 9, 6, '2023-04-16', '2023-04-30', '2023-04-30'),
+(11, 1, 10, 2, '2024-11-01', '2024-11-15', NULL);
 
 -- FINES
 INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate) VALUES
@@ -178,7 +179,8 @@ INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate
 (7, 7, 7, 6.00, 'Paid', '2023-04-28'),
 (8, 8, 8, 7.50, 'Paid', '2023-04-29'),
 (9, 9, 9, 5.00, 'Paid', '2023-04-30'),
-(10, 10, 10, 8.00, 'Unpaid', NULL);
+(10, 9, 9, 10.00, 'Unpaid', NULL),
+(11, 10, 10, 8.00, 'Unpaid', NULL);
 
 -- RESERVATIONS
 INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
@@ -210,7 +212,7 @@ JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID;
 
 /* ********************************
  Query 2:Nested Query with IN, ANY, or ALL and GROUP BY
- Purpose: 
+ Purpose:
    ********************************
 */
 
@@ -233,7 +235,7 @@ WHERE EXISTS (
 /* ********************************
  Query 4: FULL OUTER JOIN
  Purpose: List all books with their reservation status, showing whether they are reserved or not.
- Use a FULL OUTER JOIN to include books that are not currently reserved. 
+ Use a FULL OUTER JOIN to include books that are not currently reserved.
  Expected Result: A list of book titles and reservation status (NULL if no reservation exists).
    ********************************
 */
@@ -248,7 +250,7 @@ LIMIT 0, 25;
 
 /* ********************************
  Query 5: Nested Query with Set Operations UNION, EXCEPT, or INTERSECT.
- Purpose: Identify members who have both paid and unpaid fines. 
+ Purpose: Identify members who have both paid and unpaid fines.
  Expected Result: Names of members with at least one paid and one unpaid fine.
    ********************************
 */
@@ -263,9 +265,8 @@ WHERE MemberID IN (
 
 /* ********************************
  Query 6: Non-Trivial Query Using Two Tables
- Purpose: Display the members with the highest fine amount.
- Expected Result: Retrieves list of members with highest total fine amount.
- in descending order by the number of reservations.
+ Purpose: Display the member with the highest fine amount.
+ Expected Result: Retrieves member with highest total fine amount.
    ********************************
 */
 SELECT m.Name AS MemberName, SUM(f.FineAmount) AS TotalFineAmount
