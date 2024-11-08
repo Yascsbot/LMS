@@ -1,5 +1,5 @@
 -- Database: archive
-
+-- DBMS: MYSQL 
 -- Drop tables if they exist
 DROP TABLE IF EXISTS BOOKS;
 DROP TABLE IF EXISTS MEMBERS;
@@ -202,7 +202,9 @@ INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Stat
 SELECT BOOKS.Title, BOOKS.Author, MEMBERS.Name AS MemberName, LOANS.LoanDate
 FROM LOANS
 JOIN BOOKS ON LOANS.BookID = BOOKS.BookID
-JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID;
+JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID
+ORDER BY BOOKS.Title ASC, LOANS.LoanDate ASC;
+
 
 /* ********************************
  Query 2:Nested Query with IN, ANY, or ALL and GROUP BY
