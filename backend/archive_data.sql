@@ -246,16 +246,15 @@ ORDER BY "Number of Loans" DESC;
  Expected Result: A list of member names with overdue loans.
    ********************************
 */
-SELECT M.Name, O.OverdueLoanCount
-FROM MEMBERS M
-JOIN (
-    SELECT L.MemberID, COUNT(L.LoanID) AS OverdueLoanCount
-    FROM LOANS L
-    WHERE L.DueDate < CURDATE() AND L.ReturnDate IS NULL
-    GROUP BY L.MemberID
-) AS O ON M.MemberID = O.MemberID
-ORDER BY O.OverdueLoanCount DESC;
-
+SELECT M.Name
+FROM MEMBERS AS M
+WHERE EXISTS (
+    SELECT L.LoanID
+    FROM LOANS AS L
+    WHERE L.MemberID = M.MemberID
+    AND L.DueDate < CURDATE()
+    AND L.ReturnDate IS NULL
+);
 
 /* ********************************
  Query 4: FULL OUTER JOIN
