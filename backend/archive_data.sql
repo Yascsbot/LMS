@@ -195,22 +195,50 @@ INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Stat
 /* ********************************
  Query 1: Join of Three Tables with JOIN ON
  Purpose: Retrieve the titles and authors of books that have been borrowed by members,
- along with the member’s name and loan date. Expected Result: A list of book titles and
- authors, the member’s name who borrowed each book, and the loan date.
+ along with the member’s name and loan date. 
+ Expected Result: A list of member's names, the title of the book that has been borrowed, the author,
+ and the date that it has been loaned out.
    ********************************
 */
-SELECT BOOKS.Title, BOOKS.Author, MEMBERS.Name AS MemberName, LOANS.LoanDate
+SELECT MEMBERS.Name AS Membername, BOOKS.Title, BOOKS.Author, LOANS.LoanDate
 FROM LOANS
 JOIN BOOKS ON LOANS.BookID = BOOKS.BookID
 JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID
-ORDER BY BOOKS.Title ASC, LOANS.LoanDate ASC;
+ORDER BY MEMBERS.Name ASC, BOOKS.Title ASC, LOANS.LoanDate ASC;
+
+
 
 
 /* ********************************
  Query 2:Nested Query with IN, ANY, or ALL and GROUP BY
- Purpose: 
+ Purpose: Find the books that have been reserved by members more than the average amount of loans that have unpaid fines.
+ Expected Result: Book titles and the number of times that it has been loaned out. 
    ********************************
-*/
+   */
+SELECT BOOKS.Title, COUNT(LOANS.LoanID) AS "Number of Loans"
+FROM BOOKS
+JOIN LOANS ON BOOKS.BookID = LOANS.BookID
+JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID
+WHERE MEMBERS.MemberID IN (
+    SELECT F.MemberID
+    FROM FINES F
+    JOIN RESERVATIONS R ON F.MemberID = R.MemberID
+    WHERE F.FineStatus = 'Unpaid' AND R.Status = 'Pending'
+)
+GROUP BY BOOKS.Title
+HAVING COUNT(LOANS.LoanID) > (
+    SELECT AVG(LoanCount)
+    FROM (
+        SELECT COUNT(LoanID) AS LoanCount
+        FROM LOANS
+        GROUP BY BookID
+    ) AS AvgLoanCounts
+)
+ORDER BY "Number of Loans" DESC;
+
+
+
+
 
  /* ********************************
  Query 3: Correlated Nested Query with Aliasing
@@ -218,44 +246,60 @@ ORDER BY BOOKS.Title ASC, LOANS.LoanDate ASC;
  Expected Result: A list of member names with overdue loans.
    ********************************
 */
-SELECT M.Name
+SELECT M.Name, O.OverdueLoanCount
 FROM MEMBERS M
-WHERE EXISTS (
-    SELECT 1
+JOIN (
+    SELECT L.MemberID, COUNT(L.LoanID) AS OverdueLoanCount
     FROM LOANS L
-    WHERE L.MemberID = M.MemberID
-    AND L.DueDate < CURDATE()
-    AND L.ReturnDate IS NULL
-);
+    WHERE L.DueDate < CURDATE() AND L.ReturnDate IS NULL
+    GROUP BY L.MemberID
+) AS O ON M.MemberID = O.MemberID
+ORDER BY O.OverdueLoanCount DESC;
+
 
 /* ********************************
  Query 4: FULL OUTER JOIN
  Purpose: List all books with their reservation status, showing whether they are reserved or not.
  Use a FULL OUTER JOIN to include books that are not currently reserved. 
+ Since MYSQL doesn't support a FULL OUTTER JOIN, the LEFT and RIGHT JOIN  were used in addition
+ with union.
  Expected Result: A list of book titles and reservation status (NULL if no reservation exists).
    ********************************
 */
 SELECT B.Title, R.Status AS ReservationStatus
 FROM BOOKS B
 LEFT JOIN RESERVATIONS R ON B.BookID = R.BookID
+
 UNION
+
 SELECT B.Title, R.Status AS ReservationStatus
 FROM BOOKS B
 RIGHT JOIN RESERVATIONS R ON B.BookID = R.BookID
-LIMIT 0, 25;
+ORDER BY  ReservationStatus ASC;
+
+
+
 
 /* ********************************
  Query 5: Nested Query with Set Operations UNION, EXCEPT, or INTERSECT.
- Purpose: Identify members who have both paid and unpaid fines. 
- Expected Result: Names of members with at least one paid and one unpaid fine.
-   ********************************
-*/
-SELECT Name FROM MEMBERS
-WHERE MemberID IN (
-    (SELECT MemberID FROM FINES WHERE FineStatus = 'Paid')
-    INTERSECT
-    (SELECT MemberID FROM FINES WHERE FineStatus = 'Unpaid')
-);
+ Purpose: Find books that are currently reserved but have never been borrowed.
+ Expected Result: A list of book titles that have active reservations but no loan records.
+******************************** */
+
+SELECT B.Title AS BookTitle
+FROM BOOKS B
+JOIN RESERVATIONS R ON B.BookID = R.BookID
+WHERE R.Status = 'Pending'
+AND B.BookID IN (
+    SELECT BookID
+    FROM RESERVATIONS
+    EXCEPT
+    SELECT BookID
+    FROM LOANS
+)
+ORDER BY B.Title ASC;
+
+
 
 /* ********************************
  Query 6: Non-Trivial Query Using Two Tables
