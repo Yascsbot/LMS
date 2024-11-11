@@ -1,5 +1,6 @@
 -- Database: archive
 -- DBMS: MYSQL 
+-- DBMS: MYSQL 
 -- Drop tables if they exist
 DROP DATABASE IF EXISTS archive;
 CREATE DATABASE archive;
@@ -187,6 +188,8 @@ INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate
 
 -- RESERVATIONS
 INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
+-- RESERVATIONS
+INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
 (1, 1, 3, '2023-05-10', 'Pending'),
 (2, 2, 1, '2023-05-11', 'Fulfilled'),
 (3, 3, 2, '2023-05-12', 'Pending'),
@@ -365,8 +368,21 @@ WHERE m.MemberId = l.MemberId
  Purpose: Finds the most popular books by members with outstanding fees.
  Expected Result: Lists the titles of books borrowed by members with outstanding fees
  and the count of times each has been borrowed by such members.
+ Purpose: Finds the most popular books by members with outstanding fees.
+ Expected Result: Lists the titles of books borrowed by members with outstanding fees
+ and the count of times each has been borrowed by such members.
    ********************************
 */
+SELECT b.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
+FROM BOOKS b, LOANS l
+WHERE b.BookId = l.BookId
+  AND l.MemberId IN (
+      SELECT f.MemberId
+      FROM FINES f
+      WHERE f.FineStatus = 'Unpaid'
+  )
+GROUP BY b.BookId
+ORDER BY BorrowCount DESC;
 SELECT b.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
 FROM BOOKS b, LOANS l
 WHERE b.BookId = l.BookId
