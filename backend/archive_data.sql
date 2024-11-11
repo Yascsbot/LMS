@@ -10,7 +10,6 @@ DROP TABLE IF EXISTS LOANS;
 DROP TABLE IF EXISTS STAFF;
 DROP TABLE IF EXISTS FINES;
 DROP TABLE IF EXISTS RESERVATIONS;
-
 -- --------------------------------------------------------
 -- ***************************
 -- Part A
@@ -56,7 +55,7 @@ CREATE TABLE LOANS (
     LoanId INT NOT NULL AUTO_INCREMENT,
     BookId INT,
     MemberId INT,
-	StaffID INT,
+  	StaffID INT,
     LoanDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     DueDate TIMESTAMP NOT NULL,
     ReturnDate DATETIME DEFAULT NULL,
@@ -64,7 +63,6 @@ CREATE TABLE LOANS (
     FOREIGN KEY (BookId) REFERENCES BOOKS(BookId) ON DELETE SET NULL,
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL
 )ENGINE=InnoDB;
-
 -- --------------------------------------------------------
 
 -- Table structure for table STAFF
@@ -141,7 +139,6 @@ INSERT INTO MEMBERS (MemberID, Name, Email, PhoneNumber, Address, MembershipType
 (8, 'Hank Brown', 'hank.b@example.com', '4567890123', '505 Redwood Blvd.', 'Standard', '2023-04-20'),
 (9, 'Irene James', 'irene.j@example.com', '5678901234', '606 Poplar St.', 'Premium', '2023-04-25'),
 (10, 'John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
-
 -- LOANS
 INSERT INTO LOANS (LoanID, BookID, MemberID, StaffID, LoanDate, DueDate, ReturnDate) VALUES
 (1, 1, 2, 1, '2023-04-01', '2023-04-15', '2023-04-14'),
@@ -391,3 +388,4 @@ JOIN LOANS AS l ON b.BookId = l.BookId
 JOIN MEMBERS AS m ON l.MemberId = m.MemberId
 JOIN STAFF AS s ON l.StaffId = s.StaffId
 WHERE l.ReturnDate IS NULL;
+
