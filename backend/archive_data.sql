@@ -186,8 +186,7 @@ INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate
 (11, 10, 11, 8.00, 'Unpaid', NULL);
 
 
--- RESERVATIONS
-INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
+
 -- RESERVATIONS
 INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
 (1, 1, 3, '2023-05-10', 'Pending'),
