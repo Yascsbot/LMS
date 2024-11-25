@@ -367,9 +367,6 @@ WHERE m.MemberId = l.MemberId
  Purpose: Finds the most popular books by members with outstanding fees.
  Expected Result: Lists the titles of books borrowed by members with outstanding fees
  and the count of times each has been borrowed by such members.
- Purpose: Finds the most popular books by members with outstanding fees.
- Expected Result: Lists the titles of books borrowed by members with outstanding fees
- and the count of times each has been borrowed by such members.
    ********************************
 */
 SELECT b.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
@@ -382,20 +379,11 @@ WHERE b.BookId = l.BookId
   )
 GROUP BY b.BookId
 ORDER BY BorrowCount DESC;
-SELECT b.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
-FROM BOOKS b, LOANS l
-WHERE b.BookId = l.BookId
-  AND l.MemberId IN (
-      SELECT f.MemberId
-      FROM FINES f
-      WHERE f.FineStatus = 'Unpaid'
-  )
-GROUP BY b.BookId
-ORDER BY BorrowCount DESC;
+
 
 /* ********************************
  Query 9:Non-Trivial Query Using Three Tables
- Purpose: FInds details of overdue books with member and staff information.
+ Purpose: Finds details of overdue books with member and staff information.
  Expected Result: Retrieves the list of titles, authors of overdue books, the names
  of the members who borrowed them, and the staff members who processed the loans.
    ********************************
