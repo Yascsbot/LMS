@@ -76,10 +76,9 @@
 
           <!-- Query Buttons -->
           <div class="mb-3">
-            <button class="btn" id="btnAllBooks">View All Books</button>
-            <button class="btn" id="btnEmployeeCount">View Employee Count</button>
-            <button class="btn" id="btnProjects">View Projects by Department</button>
-            <button class="btn" id="btnBudgetAnalysis">View Department Budget Analysis</button>
+            <button class="btn" id="btnBookSpecs">View Book Specs</button>
+            <button class="btn" id="btnBorrowedbooks">View Borrowed Books</button>
+            <button class="btn" id="btnReservationStats">View Reserved Books </button>
           </div>
 
           <div class="mt-4">
@@ -126,7 +125,7 @@
           try {
             // Get parameter value
             const parameterValue = queryParameter.value.trim();
-            const queryParam = parameterValue ? `?departmentName=${encodeURIComponent(parameterValue)}` : "";
+            const queryParam = parameterValue ? `?Title=${encodeURIComponent(parameterValue)}` : "";
             const response = await fetch(endpoint + queryParam);
             const data = await response.json();
 
@@ -150,20 +149,19 @@
         };
 
         // Button Event Listeners
-        document.getElementById("btnAllBooks").addEventListener("click", () => {
-          fetchAndDisplay("/books", ["BookID", "Title", "ISBN", "Genre", "PublicationDate", "AvailableCopies", "TotalCopies"], ["BookID", "Title", "ISBN", "Genre", "PublicationDate", "AvailableCopies", "TotalCopies"]);
+        document.getElementById("btnBookSpecs").addEventListener("click", () => {
+          fetchAndDisplay("/books", ["BookID", "Title", "ISBN", "Genre", "Publication Date", "Available Copies", "Total Copies"], ["BookID", "Title", "ISBN", "Genre", "PublicationDate", "AvailableCopies", "TotalCopies"]);
         });
 
         // Button Event Listener for Employee Count by Department
-        document.getElementById("btnEmployeeCount").addEventListener("click", () => {
-          fetchAndDisplay("/department/employee-count", ["Department Name", "Employee Count", "Avg Hours Worked", "Total Projects"], ["DepartmentName", "EmployeeCount", "AvgHoursWorked", "TotalProjects"]);
+        document.getElementById("btnBorrowedbooks").addEventListener("click", () => {
+          fetchAndDisplay("/books/borrowed", ["Title" , "Author", "Member Name", "Loan Date", "Return Date"], ["Title" , "Author", "MemberName", "LoanDate", "ReturnDate"]);
         });
-        document.getElementById("btnProjects").addEventListener("click", () => {
-          fetchAndDisplay("/department/projects", ["Department Name", "Project Name", "Active Employees"], ["DepartmentName", "ProjectName", "ActiveEmployees"]);
+        document.getElementById("btnReservationStats").addEventListener("click", () => {
+          fetchAndDisplay("/books/reservationStats", ["Title", "ReservationStatus"], ["Title", "ReservationStatus"]);
         });
-        document.getElementById("btnBudgetAnalysis").addEventListener("click", () => {
-          fetchAndDisplay("/department/budget-analysis", ["Department Name", "Total Dependents", "Total Employees", "Total Projects", "Total Salaries"], ["DepartmentName", "TotalDependents", "TotalEmployees", "TotalProjects", "TotalSalaries"]);
-        });
+   
+
       });
     </script>
   </body>
