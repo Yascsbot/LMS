@@ -10,16 +10,21 @@ function getAllFines(req, res) {
     M.MemberID,
     M.Name AS MemberName,
     M.Email,
-    M.PhoneNumber
+     CONCAT(
+            SUBSTRING(M.PhoneNumber, 1, 3), '-', 
+            SUBSTRING(M.PhoneNumber, 4, 3), '-', 
+            SUBSTRING(M.PhoneNumber, 7, 4)
+        ) AS PhoneNumber
 FROM Fines F
 JOIN Members M ON F.MemberID = M.MemberID;`;
 
   db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
     res.json(results);
   });
 }
-
 // Query 8: Find the most popular books borrowed by members with outstanding fees
 function getPopularBooksByFee(req, res) {
   const query = `
