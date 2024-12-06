@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Department Queries</title>
+    <link rel="stylesheet" href="https://bootswatch.com/5/pulse/bootstrap.min.css" />
+    <style>
+      .content-section {
+        padding: 2rem 0;
+      }
+      .feature-box {
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .btn {
+        border-radius: 50px;
+        margin: 0.2rem;
+        background-color: #007bff;
+        color: white;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand me-auto ms-3" href="index.html"><i class="fas fa-book"></i> Archive</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="books.html">Books</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="members.html">Members</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="loans.html">Loans</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="fines.html">Fines</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="reservations.html">Reservations</a>
+            </li>
+          </ul>
+        </div>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link me-4" href="staff.html">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!-- Main Content -->
+    <div class="content-section">
+      <div class="container">
+        <div class="feature-box">
+          <h2>Member Queries</h2>
+          <p>Enter a parameter (optional) and select a query to view member-related data:</p>
+
+          <!-- Parameter Input -->
+          <div class="mb-3">
+            <label for="queryParameter" class="form-label">Parameter (e.g., Member Name):</label>
+            <input type="text" id="queryParameter" class="form-control" placeholder="Enter parameter (optional)" />
+          </div>
+
+          <!-- Query Buttons -->
+          <div class="mb-3">
+            <button class="btn" id="btnViewMembers">View Members</button>
+            <button class="btn" id="btnOverDueMem">Members With Overdue Loans</button>
+            <button class="btn" id="btnHighestFines">View Member With Highest Fines </button>
+          </div>
+
+          <div class="mt-4">
+            <table class="table table-bordered table-striped">
+              <thead class="table-dark">
+                <tr id="tableHeaders">
+                  <!-- Dynamic table headers -->
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <!-- Dynamic rows populated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Results Table -->
+          <div class="mt-4">
+            <table class="table table-bordered table-striped">
+              <thead class="table-dark">
+                <tr id="tableHeaders">
+                  <!-- Dynamic table headers -->
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <!-- Dynamic rows populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include Font Awesome and Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const resultsTableBody = document.getElementById("resultsTableBody");
+        const tableHeaders = document.getElementById("tableHeaders");
+        const queryParameter = document.getElementById("queryParameter");
+
+        // Function to fetch and display data based on query
+        const fetchAndDisplay = async (endpoint, headers, keyMappings) => {
+          try {
+            // Get parameter value
+            const parameterValue = queryParameter.value.trim();
+            const queryParam = parameterValue ? `?Name=${encodeURIComponent(parameterValue)}` : "";
+            const response = await fetch(endpoint + queryParam);
+            const data = await response.json();
+
+            if (data.length === 0) {
+              alert("No data found for the given parameter.");
+              return;
+            }
+            // Update table headers
+            tableHeaders.innerHTML = headers.map((header) => `<th>${header}</th>`).join("");
+
+            // Populate table rows
+            resultsTableBody.innerHTML = "";
+            data.forEach((row) => {
+              const rowHtml = keyMappings.map((key) => `<td>${row[key] || "N/A"}</td>`).join("");
+              resultsTableBody.innerHTML += `<tr>${rowHtml}</tr>`;
+            });
+          } catch (error) {
+            console.error(`Error fetching data from ${endpoint}:`, error);
+            resultsTableBody.innerHTML = `<tr><td colspan="${headers.length}">Failed to load data. Please try again later.</td></tr>`;
+          }
+        };
+
+        // Button Event Listeners
+        document.getElementById("btnViewMembers").addEventListener("click", () => {
+          fetchAndDisplay("/members", ["Member ID", "Name", "Email", "Phone Number", "Address", "Membership Type", "Join Date"], ["MemberID", "Name", "Email", "PhoneNumber", "Address", "MembershipType", "JoinDate"]);
+        });
+
+        // Button Event Listener for Employee Count by Department
+        document.getElementById("btnOverDueMem").addEventListener("click", () => {
+          fetchAndDisplay("/members/overdue", ["Name"], ["Name"]);
+        });
+        document.getElementById("btnHighestFines").addEventListener("click", () => {
+          fetchAndDisplay("/members/highestFine", [ "Member Name","Total Fine Amount" ], ["MemberName","TotalFineAmount"]);
+        });
+   
+
+      });
+    </script>
+  </body>
+</html>
