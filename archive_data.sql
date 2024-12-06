@@ -68,7 +68,7 @@ CREATE TABLE LOANS (
     DueDate TIMESTAMP NOT NULL,
     ReturnDate DATETIME DEFAULT NULL,
     PRIMARY KEY (LoanId),
-    FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE SET NULL,
+    FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE CASCADE,
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL
 );
 
@@ -77,7 +77,7 @@ CREATE TABLE LOANS (
 -- Table structure for table STAFF
 
 CREATE TABLE STAFF (
-    StaffId INT NOT NULL CHECK(StaffId > 0),
+    StaffId INT NOT NULL,
     Name VARCHAR(256) NOT NULL,
     Email VARCHAR(128) NOT NULL,
     Role VARCHAR(64) NOT NULL,
@@ -93,74 +93,101 @@ CREATE TABLE STAFF (
 -- Table structure for table FINES
 
 CREATE TABLE FINES (
-    FineId INT NOT NULL CHECK(FineId > 0),
+    FineId INT NOT NULL AUTO_INCREMENT,
     MemberId INT,
     LoanId INT,
-    FineAmount DECIMAL(64, 0) NOT NULL DEFAULT 5,
-    FineStatus VARCHAR(256) NOT NULL,
-    PaymentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FineAmount DECIMAL(10, 2) NOT NULL DEFAULT 5.00,
+    PaymentDate TIMESTAMP DEFAULT NULL,
     PRIMARY KEY (FineId),
     FOREIGN KEY (LoanId) REFERENCES LOANS(LoanId) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE CASCADE
 );
+
+-- --------------------------------------------------------
+
+-- Table structure for table FINE_STATUS
+CREATE TABLE FINE_STATUS {
+    MemberID INT,
+    FineID INT, 
+    FineStatus VARCHAR(16) NOT NULL CHECK (FineStatus IN ('Paid', 'Unpaid')),
+    PRIMARY KEY (FineID, MemberID),
+    FOREIGN KEY (FineID) REFERENCES FINES(FineID) ON DELETE CASCADE,
+    FOREIGN KEY (MemberID) REFERENCES MEMBERS(MemberId) ON DELETE CASCADE
+}
 
 -- --------------------------------------------------------
 
 -- Table structure for table RESERVATIONS
 
 CREATE TABLE RESERVATIONS (
-    ReservationId INT NOT NULL CHECK(ReservationId > 0),
+    ReservationId INT NOT NULL AUTO_INCREMENT,
     MemberId INT,
     BookId INT,
     ReservationDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Status VARCHAR(256) NOT NULL COMMENT 'Two values "PENDING" or "FULFILLED"',
     PRIMARY KEY (ReservationId),
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (BookId) REFERENCES BOOKS(BookId) ON DELETE SET NULL ON UPDATE CASCADE
+    FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- ***************************
 -- Part B
 -- ***************************
 -- Insert------------------------------------------------------
-INSERT INTO BOOKS (BookID, Title, Author, ISBN, Genre, PublicationDate, AvailableCopies, TotalCopies) VALUES
-(1, 'The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565', 'Fiction', '1925-04-10', 5, 10),
-(2, '1984', 'George Orwell', '9780451524935', 'Dystopian', '1949-06-08', 3, 10),
-(3, 'To Kill a Mockingbird', 'Harper Lee', '9780061120084', 'Fiction', '1960-07-11', 4, 10),
-(4, 'Moby Dick', 'Herman Melville', '9781503280786', 'Adventure', '1851-11-14', 2, 10),
-(5, 'War and Peace', 'Leo Tolstoy', '9781420951080', 'Historical', '1869-01-01', 6, 10),
-(6, 'Pride and Prejudice', 'Jane Austen', '9781503290563', 'Romance', '1813-01-28', 8, 10),
-(7, 'The Catcher in the Rye', 'J.D. Salinger', '9780316769488', 'Fiction', '1951-07-16', 3, 10),
-(8, 'The Odyssey', 'Homer', '9780140268867', 'Epic', '1952-08-30', 7, 10),
-(9, 'Brave New World', 'Aldous Huxley', '9780060850524', 'Dystopian', '1932-01-01', 2, 10),
-(10, 'Roadside Picnic', 'Arkady and Boris Strugatsky', '9781613743447', 'Sci. Fiction', '1972-01-01', 10, 10),
-(11, 'The Iliad', 'Homer', '9780140275360', 'Epic', '1963-01-15', 5, 10);
+INSERT INTO BOOKS_DETAILS (ISBN, Title, Author, Genre, PublicationDate, AvailableCopies, TotalCopies) VALUES
+('9780743273565', 'The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', '1925-04-10', 5, 10),
+('9780451524935', '1984', 'George Orwell', 'Dystopian', '1949-06-08', 3, 10),
+('9780061120084', 'To Kill a Mockingbird', 'Harper Lee', 'Fiction', '1960-07-11', 4, 10),
+('9781503280786', 'Moby Dick', 'Herman Melville', 'Adventure', '1851-11-14', 2, 10),
+('9781420951080', 'War and Peace', 'Leo Tolstoy', 'Historical', '1869-01-01', 6, 10),
+('9781503290563', 'Pride and Prejudice', 'Jane Austen', 'Romance', '1813-01-28', 8, 10),
+('9780316769488', 'The Catcher in the Rye', 'J.D. Salinger', 'Fiction', '1951-07-16', 3, 10),
+('9780140268867', 'The Odyssey', 'Homer', 'Epic', '1952-08-30', 7, 10),
+('9780060850524', 'Brave New World', 'Aldous Huxley', 'Dystopian', '1932-01-01', 2, 10),
+('9781613743447', 'Roadside Picnic', 'Arkady and Boris Strugatsky', 'Sci. Fiction', '1972-01-01', 10, 10),
+('9780140275360', 'The Iliad', 'Homer', 'Epic', '1963-01-15', 5, 10);
+
+-- BOOK_INVENTORY
+INSERT INTO BOOK_INVENTORY (ISBN) VALUES
+('9780743273565'),
+('9780451524935'),
+('9780061120084'),
+('9781503280786'),
+('9781420951080'),
+('9781503290563'),
+('9780316769488'),
+('9780140268867'),
+('9780060850524'),
+('9781613743447'),
+('9780140275360');
+
 
 -- MEMBERS
-INSERT INTO MEMBERS (MemberID, Name, Email, PhoneNumber, Address, MembershipType, JoinDate) VALUES
-(1, 'Alice Johnson', 'alice@example.com', '1234567890', '123 Maple St.', 'Standard', '2023-01-15'),
-(2, 'Bob Smith', 'bob.smith@example.com', '0987654321', '456 Oak Ave.', 'Premium', '2023-02-20'),
-(3, 'Carol White', 'carol.white@example.com', '9876543210', '789 Birch Blvd.', 'Standard', '2023-03-12'),
-(4, 'David Black', 'david@example.com', '5647382910', '101 Pine St.', 'Standard', '2023-03-22'),
-(5, 'Emily Green', 'emily.green@example.com', '3421567890', '202 Willow Way', 'Premium', '2023-04-02'),
-(6, 'Frank Wright', 'frank.w@example.com', '6789054321', '303 Cedar Ct.', 'Standard', '2023-04-10'),
-(7, 'Grace Lee', 'grace.lee@example.com', '3456781234', '404 Spruce Rd.', 'Premium', '2023-04-15'),
-(8, 'Hank Brown', 'hank.b@example.com', '4567890123', '505 Redwood Blvd.', 'Standard', '2023-04-20'),
-(9, 'Irene James', 'irene.j@example.com', '5678901234', '606 Poplar St.', 'Premium', '2023-04-25'),
-(10, 'John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
+INSERT INTO MEMBERS (Name, Email, PhoneNumber, Address, MembershipType, JoinDate) VALUES
+('Alice Johnson', 'alice@example.com', '1234567890', '123 Maple St.', 'Standard', '2023-01-15'),
+('Bob Smith', 'bob.smith@example.com', '0987654321', '456 Oak Ave.', 'Premium', '2023-02-20'),
+('Carol White', 'carol.white@example.com', '9876543210', '789 Birch Blvd.', 'Standard', '2023-03-12'),
+('David Black', 'david@example.com', '5647382910', '101 Pine St.', 'Standard', '2023-03-22'),
+('Emily Green', 'emily.green@example.com', '3421567890', '202 Willow Way', 'Premium', '2023-04-02'),
+('Frank Wright', 'frank.w@example.com', '6789054321', '303 Cedar Ct.', 'Standard', '2023-04-10'),
+('Grace Lee', 'grace.lee@example.com', '3456781234', '404 Spruce Rd.', 'Premium', '2023-04-15'),
+('Hank Brown', 'hank.b@example.com', '4567890123', '505 Redwood Blvd.', 'Standard', '2023-04-20'),
+('Irene James', 'irene.j@example.com', '5678901234', '606 Poplar St.', 'Premium', '2023-04-25'),
+('John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
 
 -- LOANS
-INSERT INTO LOANS (LoanID, BookID, MemberID, StaffID, LoanDate, DueDate, ReturnDate) VALUES
-(1, 1, 2, 1, '2023-04-01', '2023-04-15', '2023-04-14'),
-(2, 3, 1, 2, '2023-04-03', '2023-04-17', NULL),
-(3, 2, 3, 3, '2023-04-05', '2023-04-19', '2023-04-18'),
-(4, 5, 4, 4, '2023-04-10', '2023-04-24', NULL),
-(5, 6, 5, 5, '2023-04-12', '2023-04-26', '2023-04-25'),
-(6, 4, 6, 6, '2023-04-13', '2023-04-27', '2023-04-26'),
-(7, 7, 7, 7, '2023-04-14', '2023-04-28', NULL),
-(8, 8, 8, 8, '2023-04-15', '2023-04-29', NULL),
-(9, 9, 9, 9, '2023-04-16', '2023-04-30', '2023-04-30'),
-(10, 2, 2, 3, '2023-04-20', '2023-04-27', NULL),
-(11, 11, 10, 10, '2024-10-17', '2024-11-01', NULL);
+INSERT INTO LOANS (BookID, MemberID, StaffID, LoanDate, DueDate, ReturnDate) VALUES
+(1, 2, 1, '2023-04-01', '2023-04-15', '2023-04-14'),
+(3, 1, 2, '2023-04-03', '2023-04-17', NULL),
+(2, 3, 3, '2023-04-05', '2023-04-19', '2023-04-18'),
+(5, 4, 4, '2023-04-10', '2023-04-24', NULL),
+(6, 5, 5, '2023-04-12', '2023-04-26', '2023-04-25'),
+(4, 6, 6, '2023-04-13', '2023-04-27', '2023-04-26'),
+(7, 7, 7, '2023-04-14', '2023-04-28', NULL),
+(8, 8, 8, '2023-04-15', '2023-04-29', NULL),
+(9, 9, 9, '2023-04-16', '2023-04-30', '2023-04-30'),
+(2, 2, 3, '2023-04-20', '2023-04-27', NULL),
+(11, 10, 10, '2024-10-17', '2024-11-01', NULL);
 
 -- STAFF
 INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
@@ -176,20 +203,32 @@ INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
 (10, 'Mark Red', 'mark@example.com', 'Librarian', 'mred', 'hashed_password10');
 
 -- FINES
-INSERT INTO FINES (FineID, MemberID, LoanID, FineAmount, FineStatus, PaymentDate) VALUES
-(1, 2, 1, 5.00, 'Paid', '2023-04-16'),
-(2, 1, 2, 10.00, 'Unpaid', NULL),
-(3, 3, 3, 3.00, 'Paid', '2023-04-19'),
-(4, 4, 4, 2.00, 'Unpaid', NULL),
-(5, 5, 5, 1.00, 'Paid', '2023-04-25'),
-(6, 6, 6, 4.50, 'Unpaid', NULL),
-(7, 7, 7, 6.00, 'Paid', '2023-04-28'),
-(8, 8, 8, 7.50, 'Paid', '2023-04-29'),
-(9, 9, 9, 5.00, 'Paid', '2023-04-30'),
-(10, 2, 10, 7.00, 'Unpaid', NULL),
-(11, 10, 11, 8.00, 'Unpaid', NULL);
+INSERT INTO FINES (FineId, MemberId, LoanId, FineAmount, PaymentDate) VALUES
+(1, 2, 1, 5.00, '2023-04-16'),
+(2, 1, 2, 10.00, NULL),
+(3, 3, 3, 3.00, '2023-04-19'),
+(4, 4, 4, 2.00, NULL),
+(5, 5, 5, 1.00, '2023-04-25'),
+(6, 6, 6, 4.50, NULL),
+(7, 7, 7, 6.00, '2023-04-28'),
+(8, 8, 8, 7.50, '2023-04-29'),
+(9, 9, 9, 5.00, '2023-04-30'),
+(10, 2, 10, 7.00, NULL),
+(11, 10, 11, 8.00, NULL);
 
-
+-- FINE_STATUS
+INSERT INTO FINE_STATUS (FineId, MemberId, FineStatus) VALUES
+(1, 2, 'Paid'),
+(2, 1, 'Unpaid'),
+(3, 3, 'Paid'),
+(4, 4, 'Unpaid'),
+(5, 5, 'Paid'),
+(6, 6, 'Unpaid'),
+(7, 7, 'Paid'),
+(8, 8, 'Paid'),
+(9, 9, 'Paid'),
+(10, 2, 'Unpaid'),
+(11, 10, 'Unpaid');
 
 -- RESERVATIONS
 INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
