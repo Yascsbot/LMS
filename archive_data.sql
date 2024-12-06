@@ -109,14 +109,14 @@ CREATE TABLE FINES (
 -- --------------------------------------------------------
 
 -- Table structure for table FINE_STATUS
-CREATE TABLE FINE_STATUS {
+CREATE TABLE FINE_STATUS ( 
     MemberID INT,
     FineID INT, 
-    FineStatus VARCHAR(16) NOT NULL CHECK (FineStatus IN ('Paid', 'Unpaid')),
+    FineStatus VARCHAR(16) NOT NULL,
     PRIMARY KEY (FineID, MemberID),
     FOREIGN KEY (FineID) REFERENCES FINES(FineID) ON DELETE CASCADE,
     FOREIGN KEY (MemberID) REFERENCES MEMBERS(MemberId) ON DELETE CASCADE
-}
+);
 
 -- --------------------------------------------------------
 
@@ -234,19 +234,19 @@ INSERT INTO FINE_STATUS (FineId, MemberId, FineStatus) VALUES
 (11, 10, 'Unpaid');
 
 -- RESERVATIONS
-INSERT INTO RESERVATIONS (ReservationID, MemberID, BookID, ReservationDate, Status) VALUES
-(1, 1, 3, '2023-05-10', 'Pending'),
-(2, 2, 1, '2023-05-11', 'Fulfilled'),
-(3, 3, 2, '2023-05-12', 'Pending'),
-(4, 4, 5, '2023-05-13', 'Fulfilled'),
-(5, 5, 6, '2023-05-14', 'Pending'),
-(6, 6, 4, '2023-05-15', 'Fulfilled'),
-(7, 7, 7, '2023-05-16', 'Pending'),
-(8, 8, 8, '2023-05-17', 'Fulfilled'),
-(9, 9, 9, '2023-05-18', 'Pending'),
-(10, 10, 11, '2023-05-19', 'Fulfilled'),
-(11, 10, 10, '2023-05-20', 'Pending'),
-(12,2,2,'2023-04-19', 'Pending');
+INSERT INTO RESERVATIONS (MemberID, BookID, ReservationDate, Status) VALUES
+(1, 3, '2023-05-10', 'Pending'),
+(2, 1, '2023-05-11', 'Fulfilled'),
+(3, 2, '2023-05-12', 'Pending'),
+(4, 5, '2023-05-13', 'Fulfilled'),
+(5, 6, '2023-05-14', 'Pending'),
+(6, 4, '2023-05-15', 'Fulfilled'),
+(7, 7, '2023-05-16', 'Pending'),
+(8, 8, '2023-05-17', 'Fulfilled'),
+(9, 9, '2023-05-18', 'Pending'),
+(10, 11, '2023-05-19', 'Fulfilled'),
+(10, 10, '2023-05-20', 'Pending'),
+(2, 2,'2023-04-19', 'Pending');
 
 -- ***************************
 -- Part C
@@ -287,37 +287,35 @@ ORDER BY
  Expected Result: Book titles and the number of times that it has been loaned out. 
    ********************************
    */
-SELECT Title, Number_of_Loans AS "Number of Loans"
-FROM (
-    -- Step 1: Find books loaned out more than the average number of times
-    SELECT BD.Title, COUNT(L.LoanID) AS Number_of_Loans
-    FROM BOOKS_DETAILS BD
-    JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
-    JOIN LOANS L ON BI.BookID = L.BookID
-    GROUP BY BD.Title
-    HAVING COUNT(L.LoanID) > (
-        SELECT AVG(LoanCount)
-        FROM (
-            SELECT COUNT(LoanID) AS LoanCount
-            FROM LOANS
-            GROUP BY BookID
-        ) AS AvgLoanCounts
-    )
-) AS FrequentlyLoanedBooks
--- Step 2: Filter by unpaid and pending reservations
-WHERE Title IN (
-    SELECT B.Title
-    FROM BOOKS_DETAILS B
-    JOIN RESERVATIONS R ON B.ISBN = R.ISBN
+SELECT BD.Title, COUNT(L.LoanID) AS "Number of Loans"
+FROM BOOKS_DETAILS BD
+JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+JOIN LOANS L ON BI.BookID = L.BookID
+WHERE EXISTS (
+    SELECT 1
+    FROM RESERVATIONS R
     JOIN MEMBERS M ON R.MemberID = M.MemberID
     WHERE M.MemberID IN (
         SELECT F.MemberID
         FROM FINES F
-        JOIN FINE_STATUS FS ON F.FineId = FS.FineId
+        JOIN FINE_STATUS FS ON F.FineID = FS.FineID
         WHERE FS.FineStatus = 'Unpaid'
-    ) AND R.Status = 'Pending'
+    )
+    AND R.BookID = BI.BookID
+    AND R.Status = 'Pending'
 )
-ORDER BY Number_of_Loans DESC;
+GROUP BY BD.Title
+HAVING COUNT(L.LoanID) > (
+    SELECT AVG(LoanCount)
+    FROM (
+        SELECT COUNT(LoanID) AS LoanCount
+        FROM LOANS
+        GROUP BY BookID
+    ) AS AvgLoanCounts
+)
+ORDER BY "Number of Loans" DESC;
+
+
 
 
  /* ********************************
@@ -346,16 +344,15 @@ WHERE EXISTS (
  Expected Result: A list of book titles and reservation status (NULL if no reservation exists).
    ********************************
 */
-SELECT B.Title, R.Status AS ReservationStatus
-FROM BOOKS_DETAILS BD
-LEFT JOIN RESERVATIONS R ON BD.ISBN = (SELECT ISBN FROM BOOK_INVENTORY WHERE BookId = R.BookId LIMIT 1)
-
-UNION
-
 SELECT BD.Title, R.Status AS ReservationStatus
 FROM BOOKS_DETAILS BD
-RIGHT JOIN RESERVATIONS R ON BD.ISBN = (SELECT ISBN FROM BOOK_INVENTORY WHERE BookId = R.BookId LIMIT 1)
-ORDER BY  ReservationStatus ASC;
+LEFT JOIN RESERVATIONS R ON BD.ISBN = (SELECT BI.ISBN FROM BOOK_INVENTORY BI WHERE BI.BookId = R.BookId LIMIT 1)
+UNION
+SELECT BD.Title, R.Status AS ReservationStatus
+FROM BOOKS_DETAILS BD
+RIGHT JOIN RESERVATIONS R ON BD.ISBN = (SELECT BI.ISBN FROM BOOK_INVENTORY BI WHERE BI.BookId = R.BookId LIMIT 1)
+ORDER BY ReservationStatus ASC;
+
 
 
 
@@ -366,23 +363,22 @@ ORDER BY  ReservationStatus ASC;
  Expected Result: A list of book titles that have active reservations but no loan records.
 ******************************** */
 
--- First part: Find books with active (pending) reservations
-SELECT BD.Title AS BookTitle
-FROM BOOKS_DETAILS BD
-JOIN RESERVATIONS R ON BD.ISBN = (SELECT ISBN FROM BOOK_INVENTORY WHERE BookId = R.BookId LIMIT 1)
-WHERE R.Status = 'Pending'
-
--- EXCEPT-like part: Exclude books that have been borrowed
-UNION
-
-SELECT BD.Title AS BookTitle
+-- Books with active (pending) reservations
+SELECT DISTINCT BD.Title AS BookTitle
 FROM BOOKS_DETAILS BD
 JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
-WHERE BI.ISBN NOT IN (
-    SELECT L.BookId
-    FROM LOANS L
-)
+JOIN RESERVATIONS R ON BI.BookID = R.BookID
+WHERE R.Status = 'Pending'
+
+EXCEPT
+
+-- Books that have been borrowed
+SELECT DISTINCT BD.Title AS BookTitle
+FROM BOOKS_DETAILS BD
+JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+JOIN LOANS L ON BI.BookID = L.BookID
 ORDER BY BookTitle ASC;
+
 
 
 
@@ -416,13 +412,14 @@ HAVING SUM(f.FineAmount) = (
  Expected Result: Retrieves the names of members who have borrowed books within timeframe.
    ********************************
 */
-SELECT m.Name AS MemberName, bd.Title AS BookTitle
-FROM MEMBERS m, LOANS l, BOOKS b
-JOIN LOANS l ON m.MemberId = l.MemberId
-JOIN BOOK_INVENTORY bi ON l.BookId = bi.BookId
-JOIN BOOKS_DETAILS bd ON bi.ISBN = bd.ISBN
-WHERE l.LoanDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-ORDER BY m.Name, bd.Title;
+SELECT M.Name AS MemberName, BD.Title AS BookTitle
+FROM MEMBERS M
+JOIN LOANS L ON M.MemberId = L.MemberId
+JOIN BOOK_INVENTORY BI ON L.BookId = BI.BookId
+JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN
+WHERE L.LoanDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+ORDER BY M.Name, BD.Title;
+
 
 /* ********************************
  Query 8: Non-Trivial Query Using Two Tables
@@ -431,18 +428,19 @@ ORDER BY m.Name, bd.Title;
  and the count of times each has been borrowed by such members.
 ******************************** */
 
-SELECT bd.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
-FROM BOOKS_DETAILS bd
-JOIN BOOK_INVENTORY bi ON bd.ISBN = bi.ISBN
-JOIN LOANS l ON bi.BookId = l.BookId
-WHERE l.MemberId IN (
-    SELECT fs.MemberId
-    FROM FINE_STATUS fs
-    JOIN FINES f ON fs.FineID = f.FineId
-    WHERE fs.FineStatus = 'Unpaid'
+SELECT BD.Title AS BookTitle, COUNT(L.BookId) AS BorrowCount
+FROM BOOKS_DETAILS BD
+JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+JOIN LOANS L ON BI.BookId = L.BookId
+WHERE L.MemberId IN (
+    SELECT F.MemberId
+    FROM FINES F
+    JOIN FINE_STATUS FS ON F.FineId = FS.FineId
+    WHERE FS.FineStatus = 'Unpaid'
 )
-GROUP BY bd.ISBN
+GROUP BY BD.Title
 ORDER BY BorrowCount DESC;
+
 
 
 
