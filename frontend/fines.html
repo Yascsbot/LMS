@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Loan Queries</title>
+    <title>Fine Queries</title>
     <link rel="stylesheet" href="https://bootswatch.com/5/pulse/bootstrap.min.css" />
     <style>
       .content-section {
@@ -65,20 +65,20 @@
     <div class="content-section">
       <div class="container">
         <div class="feature-box">
-          <h2>Loan Queries</h2>
-          <p>Enter a parameter (optional) and select a query to view loan-related data:</p>
+          <h2>Member Queries</h2>
+          <p>Enter a parameter (optional) and select a query to view member-related data:</p>
 
           <!-- Parameter Input -->
           <div class="mb-3">
-            <label for="queryParameter" class="form-label">Parameter (e.g., Book Name):</label>
+            <label for="queryParameter" class="form-label">Parameter (e.g., Member Name):</label>
             <input type="text" id="queryParameter" class="form-control" placeholder="Enter parameter (optional)" />
           </div>
 
           <!-- Query Buttons -->
           <div class="mb-3">
-            <button class="btn" id="btnViewLoans">View Loans</button>
-            <button class="btn" id="btnRecentLoans">View Recent Loans</button>
-            <button class="btn" id="btnOverDueLoans">View Overdue Loans</button>
+            <button class="btn" id="btnViewMembers">View Members</button>
+            <button class="btn" id="btnOverDueMem">Members With Overdue Loans</button>
+            <button class="btn" id="btnHighestFines">View Member With Highest Fines </button>
           </div>
 
           <div class="mt-4">
@@ -149,16 +149,16 @@
         };
 
         // Button Event Listeners
-        document.getElementById("btnViewLoans").addEventListener("click", () => {
-          fetchAndDisplay("/loans", ["Loan ID", "Book Id", "Book Title", "Member Id","Member Name", "Loan Date", "Due Date", "Return Date"], ["LoanID", "BookID", "BookTitle", "MemberID","MemberName","LoanDate", "DueDate", "ReturnDate"]);
+        document.getElementById("btnViewMembers").addEventListener("click", () => {
+          fetchAndDisplay("/members", ["Member ID", "Name", "Email", "Phone Number", "Address", "Membership Type", "Join Date"], ["MemberID", "Name", "Email", "PhoneNumber", "Address", "MembershipType", "JoinDate"]);
         });
 
         // Button Event Listener for Employee Count by Department
-        document.getElementById("btnRecentLoans").addEventListener("click", () => {
-          fetchAndDisplay("/loans/recent", ["Member Name", "Book Title"], ["Member Name", "Book Title"]);
+        document.getElementById("btnOverDueMem").addEventListener("click", () => {
+          fetchAndDisplay("/members/overdue", ["Name"], ["Name"]);
         });
-        document.getElementById("btnOverDueLoans").addEventListener("click", () => {
-          fetchAndDisplay("/loans/overdue", ["Book Title","Author", "Member Name", "Staff Name", "Staff Role" ], ["BookTitle","Author", "MemberName", "StaffName", "StaffRole"]);
+        document.getElementById("btnHighestFines").addEventListener("click", () => {
+          fetchAndDisplay("/members/highestFine", [ "Member Name","Total Fine Amount" ], ["MemberName","TotalFineAmount"]);
         });
    
 
