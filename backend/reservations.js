@@ -1,4 +1,21 @@
 const db = require("../dbConfig");
+function getAllReservations(req, res) {
+  const query = `
+    SELECT 
+    R.ReservationID,
+    M.Name AS MemberName,
+    B.Title AS BookTitle,
+    R.ReservationDate,
+    R.Status
+FROM Reservations R
+JOIN Members M ON R.MemberID = M.MemberID
+JOIN Books B ON R.BookID = B.BookID;
+`;
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+}
 
 // Query 5: Find books that are currently reserved but have never been borrowed
 function getReservedBooksNeverBorrowed(req, res) {
@@ -23,5 +40,6 @@ function getReservedBooksNeverBorrowed(req, res) {
 }
 
 module.exports = {
+  getAllReservations,
   getReservedBooksNeverBorrowed,
 };

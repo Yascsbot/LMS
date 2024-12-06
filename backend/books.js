@@ -1,4 +1,22 @@
 const db = require("../dbConfig");
+//get all books
+function getAllbooks(req, res) {
+  const query = `
+   SELECT BookID,
+        Title,
+        Author,
+        ISBN,
+        Genre,
+        PublicationDate,
+        AvailableCopies,
+        TotalCopies
+    FROM Books;
+        `;
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+}
 
 // Retrieve titles and authors of books borrowed with member info
 function getBorrowedBooks(req, res) {
@@ -34,6 +52,7 @@ function getBooksWithReservationStatus(req, res) {
 }
 
 module.exports = {
+  getAllbooks,
   getBorrowedBooks,
   getBooksWithReservationStatus,
 };

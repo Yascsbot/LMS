@@ -1,5 +1,22 @@
 const db = require("../dbConfig");
 
+function getAllMembers(req, res) {
+  const query = `SELECT 
+        MemberID,
+        Name,
+        Email,
+        PhoneNumber,
+        Address,
+        MembershipType,
+        JoinDate
+    FROM 
+        Members;`;
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+}
+
 // Query 3: Retrieve names of members with overdue loans
 function getOverdueMembers(req, res) {
   const query = `
@@ -42,6 +59,7 @@ function getMemberWithHighestFine(req, res) {
 }
 
 module.exports = {
+  getAllMembers,
   getOverdueMembers,
   getMemberWithHighestFine,
 };

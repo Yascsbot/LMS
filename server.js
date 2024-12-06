@@ -8,7 +8,7 @@ const membersBackend = require("./backend/members");
 const loansBackend = require("./backend/loans");
 const finesBackend = require("./backend/fines");
 const reservationsBackend = require("./backend/reservations");
-// const staffBackend = require("./backend/staff");
+const staffBackend = require("./backend/staff");
 
 // Middleware Setup
 app.use(express.json());
@@ -16,27 +16,29 @@ app.use(express.static("public"));
 
 //Define Routes
 //Books
-app.get("/books", booksBackend.getBorrowedBooks);
+app.get("/books", booksBackend.getAllbooks);
+app.get("/books/borrowed", booksBackend.getBorrowedBooks);
 app.get("/books/reservationStats", booksBackend.getBooksWithReservationStatus);
 
 // members routes
-app.get("/members", membersBackend.getOverdueMembers);
+app.get("/members", membersBackend.getAllMembers);
+app.get("/members/overdue", membersBackend.getOverdueMembers);
 app.get("/members/highestFine", membersBackend.getMemberWithHighestFine);
 
 // // Loans routes
-app.get("/loans", loansBackend.getRecentLoans);
+app.get("/loans", loansBackend.getAllLoans);
+app.get("/loans/recent", loansBackend.getRecentLoans);
 app.get("/loans/overdue", loansBackend.getOverdueLoanDetails);
 
 // // Fines routes
-// app.get("/fines", finesBackend.getAllFines);
+app.get("/fines", finesBackend.getAllFines);
 app.get("/fines/popularBooksByFee", finesBackend.getPopularBooksByFee);
 
 // // Staff routes
-// app.get("/staff", staffBackend.getAllStaff);
-// app.get("/staff/neverR", staffBackend.getReservedBooksNeverBorrowed);
+app.get("/staff", staffBackend.getAllStaff);
 
 // // Reservations routes
-// app.get("/reservations", reservationsBackend.getAllReservations);
+app.get("/reservations", reservationsBackend.getAllReservations);
 app.get(
   "/reservations/reservedNeverBorrowed",
   reservationsBackend.getReservedBooksNeverBorrowed

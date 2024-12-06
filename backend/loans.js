@@ -1,5 +1,27 @@
 const db = require("../dbConfig");
 
+function getAllLoans(req, res) {
+  const query = `SELECT 
+        L.LoanID,
+        L.BookID,
+        B.Title AS BookTitle,
+        L.MemberID,
+        M.Name AS MemberName,
+        L.LoanDate,
+        L.DueDate,
+        L.ReturnDate
+    FROM 
+        Loans L
+    JOIN 
+        Books B ON L.BookID = B.BookID
+    JOIN 
+        Members M ON L.MemberID = M.MemberID;
+        `;
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+}
 // Query 7: Find titles of books borrowed by members within the last 30 days
 function getRecentLoans(req, res) {
   const query = `
@@ -35,6 +57,7 @@ function getOverdueLoanDetails(req, res) {
 }
 
 module.exports = {
+  getAllLoans,
   getRecentLoans,
   getOverdueLoanDetails,
 };
