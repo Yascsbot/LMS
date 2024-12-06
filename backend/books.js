@@ -7,13 +7,14 @@ function getAllbooks(req, res) {
         Author,
         ISBN,
         Genre,
-        PublicationDate,
+         DATE_FORMAT(PublicationDate, '%m-%d-%Y') AS PublicationDate,
         AvailableCopies,
         TotalCopies
     FROM Books;
         `;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
+
     res.json(results);
   });
 }
