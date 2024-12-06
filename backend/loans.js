@@ -7,9 +7,9 @@ function getAllLoans(req, res) {
         B.Title AS BookTitle,
         L.MemberID,
         M.Name AS MemberName,
-        L.LoanDate,
-        L.DueDate,
-        L.ReturnDate
+        DATE_FORMAT( L.LoanDate, '%m-%d-%Y') AS LoanDate,
+        DATE_FORMAT( L.DueDate, '%m-%d-%Y') AS DueDate,
+        DATE_FORMAT( L.ReturnDate, '%m-%d-%Y') AS ReturnDate
     FROM 
         Loans L
     JOIN 
