@@ -5,11 +5,13 @@
 DROP DATABASE IF EXISTS ARCHIVE;
 CREATE DATABASE ARCHIVE;
 USE ARCHIVE;
-DROP TABLE IF EXISTS BOOKS;
+DROP TABLE IF EXISTS BOOKS_DETAILS;
+DROP TABLE IF EXISTS BOOK_INVENTORY;
 DROP TABLE IF EXISTS MEMBERS;
 DROP TABLE IF EXISTS LOANS;
 DROP TABLE IF EXISTS STAFF;
 DROP TABLE IF EXISTS FINES;
+DROP TABLE IF EXISTS FINE_STATUS;
 DROP TABLE IF EXISTS RESERVATIONS;
 
 -- --------------------------------------------------------
@@ -69,7 +71,8 @@ CREATE TABLE LOANS (
     ReturnDate DATETIME DEFAULT NULL,
     PRIMARY KEY (LoanId),
     FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE CASCADE,
-    FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL
+    FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE SET NULL,
+    FOREIGN KEY (StaffID) REFERENCES STAFF(StaffId) ON DELETE CASCADE
 );
 
 -- --------------------------------------------------------
@@ -257,11 +260,23 @@ the date that it has been loaned out, and the return date if the book was return
 is null.
    ********************************
 */
-SELECT  BOOKS.Title, BOOKS.Author, MEMBERS.Name AS Membername,LOANS.LoanDate, LOANS.ReturnDate
-FROM LOANS
-JOIN BOOKS ON LOANS.BookID = BOOKS.BookID
-JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID
-ORDER BY BOOKS.Title ASC, LOANS.LoanDate ASC;
+SELECT  
+    BOOKS_DETAILS.Title, 
+    BOOKS_DETAILS.Author, 
+    MEMBERS.Name AS Membername,
+    LOANS.LoanDate, 
+    LOANS.ReturnDate
+FROM 
+    LOANS
+JOIN 
+    BOOK_INVENTORY ON LOANS.BookId = BOOK_INVENTORY.BookId
+JOIN 
+    BOOKS_DETAILS ON BOOK_INVENTORY.ISBN = BOOKS_DETAILS.ISBN
+JOIN 
+    MEMBERS ON LOANS.MemberId = MEMBERS.MemberId
+ORDER BY 
+    BOOKS_DETAILS.Title ASC, LOANS.LoanDate ASC;
+
 
 
 
@@ -275,11 +290,12 @@ ORDER BY BOOKS.Title ASC, LOANS.LoanDate ASC;
 SELECT Title, Number_of_Loans AS "Number of Loans"
 FROM (
     -- Step 1: Find books loaned out more than the average number of times
-    SELECT BOOKS.Title, COUNT(LOANS.LoanID) AS Number_of_Loans
-    FROM BOOKS
-    JOIN LOANS ON BOOKS.BookID = LOANS.BookID
-    GROUP BY BOOKS.Title
-    HAVING COUNT(LOANS.LoanID) > (
+    SELECT BD.Title, COUNT(L.LoanID) AS Number_of_Loans
+    FROM BOOKS_DETAILS BD
+    JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+    JOIN LOANS L ON BI.BookID = L.BookID
+    GROUP BY BD.Title
+    HAVING COUNT(L.LoanID) > (
         SELECT AVG(LoanCount)
         FROM (
             SELECT COUNT(LoanID) AS LoanCount
@@ -291,22 +307,17 @@ FROM (
 -- Step 2: Filter by unpaid and pending reservations
 WHERE Title IN (
     SELECT B.Title
-    FROM BOOKS B
-    JOIN RESERVATIONS R ON B.BookID = R.BookID
+    FROM BOOKS_DETAILS B
+    JOIN RESERVATIONS R ON B.ISBN = R.ISBN
     JOIN MEMBERS M ON R.MemberID = M.MemberID
     WHERE M.MemberID IN (
         SELECT F.MemberID
         FROM FINES F
-        WHERE F.FineStatus = 'Unpaid'
+        JOIN FINE_STATUS FS ON F.FineId = FS.FineId
+        WHERE FS.FineStatus = 'Unpaid'
     ) AND R.Status = 'Pending'
 )
 ORDER BY Number_of_Loans DESC;
-
-
-
-
-
-
 
 
  /* ********************************
@@ -336,14 +347,14 @@ WHERE EXISTS (
    ********************************
 */
 SELECT B.Title, R.Status AS ReservationStatus
-FROM BOOKS B
-LEFT JOIN RESERVATIONS R ON B.BookID = R.BookID
+FROM BOOKS_DETAILS BD
+LEFT JOIN RESERVATIONS R ON BD.ISBN = (SELECT ISBN FROM BOOK_INVENTORY WHERE BookId = R.BookId LIMIT 1)
 
 UNION
 
-SELECT B.Title, R.Status AS ReservationStatus
-FROM BOOKS B
-RIGHT JOIN RESERVATIONS R ON B.BookID = R.BookID
+SELECT BD.Title, R.Status AS ReservationStatus
+FROM BOOKS_DETAILS BD
+RIGHT JOIN RESERVATIONS R ON BD.ISBN = (SELECT ISBN FROM BOOK_INVENTORY WHERE BookId = R.BookId LIMIT 1)
 ORDER BY  ReservationStatus ASC;
 
 
@@ -355,18 +366,24 @@ ORDER BY  ReservationStatus ASC;
  Expected Result: A list of book titles that have active reservations but no loan records.
 ******************************** */
 
-SELECT B.Title AS BookTitle
-FROM BOOKS B
-JOIN RESERVATIONS R ON B.BookID = R.BookID
+-- First part: Find books with active (pending) reservations
+SELECT BD.Title AS BookTitle
+FROM BOOKS_DETAILS BD
+JOIN RESERVATIONS R ON BD.ISBN = (SELECT ISBN FROM BOOK_INVENTORY WHERE BookId = R.BookId LIMIT 1)
 WHERE R.Status = 'Pending'
-AND B.BookID IN (
-    SELECT BookID
-    FROM RESERVATIONS
-    EXCEPT
-    SELECT BookID
-    FROM LOANS
+
+-- EXCEPT-like part: Exclude books that have been borrowed
+UNION
+
+SELECT BD.Title AS BookTitle
+FROM BOOKS_DETAILS BD
+JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+WHERE BI.ISBN NOT IN (
+    SELECT L.BookId
+    FROM LOANS L
 )
-ORDER BY B.Title ASC;
+ORDER BY BookTitle ASC;
+
 
 
 
@@ -399,47 +416,55 @@ HAVING SUM(f.FineAmount) = (
  Expected Result: Retrieves the names of members who have borrowed books within timeframe.
    ********************************
 */
-SELECT m.Name AS MemberName, b.Title AS BookTitle
+SELECT m.Name AS MemberName, bd.Title AS BookTitle
 FROM MEMBERS m, LOANS l, BOOKS b
-WHERE m.MemberId = l.MemberId
-  AND l.BookId = b.BookId
-  AND l.LoanDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY);
+JOIN LOANS l ON m.MemberId = l.MemberId
+JOIN BOOK_INVENTORY bi ON l.BookId = bi.BookId
+JOIN BOOKS_DETAILS bd ON bi.ISBN = bd.ISBN
+WHERE l.LoanDate >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+ORDER BY m.Name, bd.Title;
 
 /* ********************************
  Query 8: Non-Trivial Query Using Two Tables
- Purpose: Finds the most popular books by members with outstanding fees.
+ Purpose: Finds the most popular books borrowed by members with outstanding fees.
  Expected Result: Lists the titles of books borrowed by members with outstanding fees
  and the count of times each has been borrowed by such members.
-   ********************************
-*/
-SELECT b.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
-FROM BOOKS b, LOANS l
-WHERE b.BookId = l.BookId
-  AND l.MemberId IN (
-      SELECT f.MemberId
-      FROM FINES f
-      WHERE f.FineStatus = 'Unpaid'
-  )
-GROUP BY b.BookId
+******************************** */
+
+SELECT bd.Title AS BookTitle, COUNT(l.BookId) AS BorrowCount
+FROM BOOKS_DETAILS bd
+JOIN BOOK_INVENTORY bi ON bd.ISBN = bi.ISBN
+JOIN LOANS l ON bi.BookId = l.BookId
+WHERE l.MemberId IN (
+    SELECT fs.MemberId
+    FROM FINE_STATUS fs
+    JOIN FINES f ON fs.FineID = f.FineId
+    WHERE fs.FineStatus = 'Unpaid'
+)
+GROUP BY bd.ISBN
 ORDER BY BorrowCount DESC;
 
 
+
 /* ********************************
- Query 9:Non-Trivial Query Using Three Tables
+ Query 9: Non-Trivial Query Using Three Tables
  Purpose: Finds details of overdue books with member and staff information.
  Expected Result: Retrieves the list of titles, authors of overdue books, the names
  of the members who borrowed them, and the staff members who processed the loans.
-   ********************************
-*/
-SELECT b.Title AS BookTitle, b.Author AS Author,
-m.Name AS MemberName,
-s.Name AS StaffName, s.Role AS StaffRole
-FROM BOOKS b, LOANS l, MEMBERS m, STAFF s
-WHERE b.BookId = l.BookId
-  AND l.MemberId = m.MemberId
-  AND l.StaffId = s.StaffId
-  AND l.DueDate < CURRENT_DATE
+******************************** */
+
+SELECT bd.Title AS BookTitle, bd.Author AS Author,
+       m.Name AS MemberName,
+       s.Name AS StaffName, s.Role AS StaffRole
+FROM BOOKS_DETAILS bd
+JOIN BOOK_INVENTORY bi ON bd.ISBN = bi.ISBN
+JOIN LOANS l ON bi.BookId = l.BookId
+JOIN MEMBERS m ON l.MemberId = m.MemberId
+JOIN STAFF s ON l.StaffID = s.StaffId
+WHERE l.DueDate < CURRENT_DATE
+  AND l.ReturnDate IS NULL  -- Ensures the book is still overdue and not yet returned
 ORDER BY l.DueDate ASC;
+
 
 /* ********************************
  Query 10: Non-Trivial Query Using Three Tables with Aliasing
@@ -448,12 +473,13 @@ ORDER BY l.DueDate ASC;
  the books borrowed, and the name of the staff member facilitating the loan.
    ********************************
 */
-SELECT b.Title AS BookTitle,
-b.Author AS BookAuthor,
+SELECT bd.Title AS BookTitle,
+bd.Author AS BookAuthor,
 m.Name AS MemberName,
 s.Name AS StaffName
-FROM BOOKS AS b
-JOIN LOANS AS l ON b.BookId = l.BookId
+FROM BOOKS_DETAILS AS bd
+JOIN BOOK_INVENTORY AS bi ON bd.ISBN = bi.ISBN
+JOIN LOANS AS l ON bi.BookId = l.BookId
 JOIN MEMBERS AS m ON l.MemberId = m.MemberId
 JOIN STAFF AS s ON l.StaffId = s.StaffId
 WHERE l.ReturnDate IS NULL;
