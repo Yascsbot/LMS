@@ -3,7 +3,7 @@ const mysql = require("mysql2");
 require("dotenv").config();
 // Step 2: Create a Database Connection
 // A connection to the MySQL database is created using the createConnection method.
-const connection = mysql.createConnection({
+const db = mysql.createConnection({
   host: process.env.DB_HOST, // Database host, usually 'localhost' or an IP address
   user: process.env.DB_USER, // Database username
   password: process.env.DB_PASSWORD, // Database password
@@ -11,7 +11,7 @@ const connection = mysql.createConnection({
 });
 // Step 3: Connect to the Database
 // The connect method is called on the connection object to establish the connection.
-connection.connect((err) => {
+db.connect((err) => {
   if (err) {
     // If there is an error, log it to the console and exit the connection.
     console.error("Database connection failed:", err.stack);
@@ -22,4 +22,4 @@ connection.connect((err) => {
 });
 // Step 4: Export the Connection
 // The connection object is exported using module.exports, allowing other modules to use this db connection.
-module.exports = connection;
+module.exports = db;

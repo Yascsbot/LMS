@@ -12,7 +12,10 @@ const staffBackend = require("./backend/staff");
 
 // Middleware Setup
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static("frontend"));
+// as the images are in a different folder.
+app.use("/images", express.static("images"));
+
 
 //Define Routes
 //Books
