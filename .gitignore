@@ -2,7 +2,6 @@
 node_modules/
 
 # Dependency lock files
-package.json
 package-lock.json
 
 # Logs
@@ -11,7 +10,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment variables
-.env
+
 
 # MacOS system files
 .DS_Store
