@@ -40,6 +40,7 @@ CREATE TABLE BOOK_INVENTORY (
     FOREIGN KEY (ISBN) REFERENCES BOOKS_DETAILS(ISBN)
 );
 
+
 -- --------------------------------------------------------
 
 -- Table structure for table MEMBERS
@@ -58,6 +59,22 @@ CREATE TABLE MEMBERS (
 );
 
 -- --------------------------------------------------------
+
+-- Table structure for table STAFF
+
+CREATE TABLE STAFF (
+    StaffId INT NOT NULL AUTO_INCREMENT,
+    Name VARCHAR(256) NOT NULL,
+    Email VARCHAR(128) NOT NULL,
+    Role VARCHAR(64) NOT NULL,
+    Username VARCHAR(64) NOT NULL,
+    Password VARCHAR(64) NOT NULL,
+    PRIMARY KEY (StaffId),
+    UNIQUE (Password, Username),
+    UNIQUE (Email)
+);
+
+-- --------------------------------------------------------
 -- change ReturnDate to view
 -- Table structure for table LOANS
 
@@ -73,22 +90,6 @@ CREATE TABLE LOANS (
     FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE CASCADE,
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE CASCADE,
     FOREIGN KEY (StaffID) REFERENCES STAFF(StaffId) ON DELETE CASCADE
-);
-
--- --------------------------------------------------------
-
--- Table structure for table STAFF
-
-CREATE TABLE STAFF (
-    StaffId INT NOT NULL AUTO_INCREMENT,
-    Name VARCHAR(256) NOT NULL,
-    Email VARCHAR(128) NOT NULL,
-    Role VARCHAR(64) NOT NULL,
-    Username VARCHAR(64) NOT NULL,
-    Password VARCHAR(64) NOT NULL,
-    PRIMARY KEY (StaffId),
-    UNIQUE (Password, Username),
-    UNIQUE (Email)
 );
 
 -- --------------------------------------------------------
@@ -178,6 +179,19 @@ INSERT INTO MEMBERS (Name, Email, PhoneNumber, Address, MembershipType, JoinDate
 ('Irene James', 'irene.j@example.com', '5678901234', '606 Poplar St.', 'Premium', '2023-04-25'),
 ('John King', 'john.king@example.com', '6789012345', '707 Ash Ln.', 'Standard', '2023-05-01');
 
+-- STAFF
+INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
+(1, 'David Brown', 'david@example.com', 'Librarian', 'dbrown', 'hashed_password1'),
+(2, 'Emily Green', 'emily@example.com', 'Assistant', 'egreen', 'hashed_password2'),
+(3, 'Frank Hill', 'frank@example.com', 'Administrator', 'fhill', 'hashed_password3'),
+(4, 'Gina Ray', 'gina@example.com', 'Librarian', 'gray', 'hashed_password4'),
+(5, 'Helen Snow', 'helen@example.com', 'Assistant', 'hsnow', 'hashed_password5'),
+(6, 'Ian Black', 'ian@example.com', 'Technician', 'iblack', 'hashed_password6'),
+(7, 'Jane Green', 'jane@example.com', 'Librarian', 'jgreen', 'hashed_password7'),
+(8, 'Kyle White', 'kyle@example.com', 'Technician', 'kwhite', 'hashed_password8'),
+(9, 'Lisa Blue', 'lisa@example.com', 'Administrator', 'lblue', 'hashed_password9'),
+(10, 'Mark Red', 'mark@example.com', 'Librarian', 'mred', 'hashed_password10');
+
 -- LOANS
 INSERT INTO LOANS (BookID, MemberID, StaffID, LoanDate, DueDate, ReturnDate) VALUES
 (1, 2, 1, '2023-04-01', '2023-04-15', '2023-04-14'),
@@ -191,19 +205,6 @@ INSERT INTO LOANS (BookID, MemberID, StaffID, LoanDate, DueDate, ReturnDate) VAL
 (9, 9, 9, '2023-04-16', '2023-04-30', '2023-04-30'),
 (2, 2, 3, '2023-04-20', '2023-04-27', NULL),
 (11, 10, 10, '2024-10-17', '2024-11-01', NULL);
-
--- STAFF
-INSERT INTO STAFF (StaffID, Name, Email, Role, Username, Password) VALUES
-(1, 'David Brown', 'david@example.com', 'Librarian', 'dbrown', 'hashed_password1'),
-(2, 'Emily Green', 'emily@example.com', 'Assistant', 'egreen', 'hashed_password2'),
-(3, 'Frank Hill', 'frank@example.com', 'Administrator', 'fhill', 'hashed_password3'),
-(4, 'Gina Ray', 'gina@example.com', 'Librarian', 'gray', 'hashed_password4'),
-(5, 'Helen Snow', 'helen@example.com', 'Assistant', 'hsnow', 'hashed_password5'),
-(6, 'Ian Black', 'ian@example.com', 'Technician', 'iblack', 'hashed_password6'),
-(7, 'Jane Green', 'jane@example.com', 'Librarian', 'jgreen', 'hashed_password7'),
-(8, 'Kyle White', 'kyle@example.com', 'Technician', 'kwhite', 'hashed_password8'),
-(9, 'Lisa Blue', 'lisa@example.com', 'Administrator', 'lblue', 'hashed_password9'),
-(10, 'Mark Red', 'mark@example.com', 'Librarian', 'mred', 'hashed_password10');
 
 -- FINES
 INSERT INTO FINES (FineId, MemberId, LoanId, FineAmount, PaymentDate) VALUES
