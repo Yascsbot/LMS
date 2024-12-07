@@ -7,10 +7,10 @@ function getAllReservations(req, res) {
     BD.Title AS BookTitle,
     DATE_FORMAT(R.ReservationDate, '%m-%d-%Y') AS ReservationDate,
     R.Status
-FROM RESERVATIONS R
-JOIN MEMBERS M ON R.MemberID = M.MemberID
-JOIN BOOK_INVENTORY BI ON R.BookID = BI.BookID
-JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN
+    FROM RESERVATIONS R
+    JOIN MEMBERS M ON R.MemberID = M.MemberID
+    JOIN BOOK_INVENTORY BI ON R.BookID = BI.BookID
+    JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN
 `;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
