@@ -25,6 +25,9 @@
       .btn:hover {
         background-color: #0056b3;
       }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -37,27 +40,15 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav mx-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="books.html">Books</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="members.html">Members</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="loans.html">Loans</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="fines.html">Fines</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="reservations.html">Reservations</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="books.html">Books</a></li>
+            <li class="nav-item"><a class="nav-link" href="members.html">Members</a></li>
+            <li class="nav-item"><a class="nav-link" href="loans.html">Loans</a></li>
+            <li class="nav-item"><a class="nav-link" href="fines.html">Fines</a></li>
+            <li class="nav-item"><a class="nav-link" href="reservations.html">Reservations</a></li>
           </ul>
         </div>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link me-4" href="staff.html">Contact</a>
-          </li>
+          <li class="nav-item"><a class="nav-link me-4" href="staff.html">Contact</a></li>
         </ul>
       </div>
     </nav>
@@ -69,7 +60,7 @@
           <p>Enter a parameter (optional) and select a query to view fine-related data:</p>
 
           <!-- Parameter Input -->
-          <div class="mb-3">
+          <div class="mb-3" id="parameterInput">
             <label for="queryParameter" class="form-label">Parameter (e.g., Member Name):</label>
             <input type="text" id="queryParameter" class="form-control" placeholder="Enter parameter (optional)" />
           </div>
@@ -78,23 +69,8 @@
           <div class="mb-3">
             <button class="btn" id="btnViewFines">View Fines</button>
             <button class="btn" id="btnPopularBooksWithFees">View Popular Books With Outstanding Fees</button>
-       
           </div>
 
-          <div class="mt-4">
-            <table class="table table-bordered table-striped">
-              <thead class="table-dark">
-                <tr id="tableHeaders">
-                  <!-- Dynamic table headers -->
-                </tr>
-              </thead>
-              <tbody id="resultsTableBody">
-                <!-- Dynamic rows populated here -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Results Table -->
           <div class="mt-4">
             <table class="table table-bordered table-striped">
               <thead class="table-dark">
@@ -119,11 +95,20 @@
         const resultsTableBody = document.getElementById("resultsTableBody");
         const tableHeaders = document.getElementById("tableHeaders");
         const queryParameter = document.getElementById("queryParameter");
+        const parameterInput = document.getElementById("parameterInput");
+
+        // Function to toggle the visibility of the parameter input
+        const toggleParameterInput = (show) => {
+          if (show) {
+            parameterInput.classList.remove("hidden");
+          } else {
+            parameterInput.classList.add("hidden");
+          }
+        };
 
         // Function to fetch and display data based on query
         const fetchAndDisplay = async (endpoint, headers, keyMappings) => {
           try {
-            // Get parameter value
             const parameterValue = queryParameter.value.trim();
             const queryParam = parameterValue ? `?Name=${encodeURIComponent(parameterValue)}` : "";
             const response = await fetch(endpoint + queryParam);
@@ -133,6 +118,7 @@
               alert("No data found for the given parameter.");
               return;
             }
+
             // Update table headers
             tableHeaders.innerHTML = headers.map((header) => `<th>${header}</th>`).join("");
 
@@ -150,17 +136,14 @@
 
         // Button Event Listeners
         document.getElementById("btnViewFines").addEventListener("click", () => {
+          toggleParameterInput(true); // Show parameter input
           fetchAndDisplay("/fines", ["Fine ID", "Member ID", "Loan ID", "Fine Amount", "Payment Date", "Fine Status", "Member Name", "Email", "Phone Number"], ["FineID", "MemberID", "LoanID", "FineAmount", "PaymentDate", "FineStatus", "MemberName", "Email", "PhoneNumber"]);
         });
 
-        // Button Event Listeners
         document.getElementById("btnPopularBooksWithFees").addEventListener("click", () => {
+          toggleParameterInput(false); // Hide parameter input
           fetchAndDisplay("/fines/popularBooksByFee", ["Book Title", "Borrow Count"], ["BookTitle", "BorrowCount"]);
         });
-
-     
-   
-
       });
     </script>
   </body>
