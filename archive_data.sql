@@ -40,7 +40,8 @@ CREATE TABLE BOOKS_DETAILS (
         TotalCopies > 0
         AND AvailableCopies <= TotalCopies
     ),
-    PRIMARY KEY (ISBN)
+    PRIMARY KEY (ISBN),
+    CHECK (CHAR_LENGTH(ISBN) = 13)
 );
 
 -- Table structure for table BOOK_INVENTORY
@@ -63,7 +64,8 @@ CREATE TABLE MEMBERS (
     JoinDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (MemberId),
     UNIQUE (Email),
-    UNIQUE (PhoneNumber)
+    UNIQUE (PhoneNumber),
+    CHECK (CHAR_LENGTH(PhoneNumber) = 10 OR PhoneNumber IS NULL)
 );
 
 -- --------------------------------------------------------
@@ -77,7 +79,8 @@ CREATE TABLE STAFF (
     Password VARCHAR(64) NOT NULL,
     PRIMARY KEY (StaffId),
     UNIQUE (Password, Username),
-    UNIQUE (Email)
+    UNIQUE (Email),
+    CHECK (CHAR_LENGTH(Password) >= 8)
 );
 
 -- --------------------------------------------------------
@@ -89,8 +92,8 @@ CREATE TABLE LOANS (
     MemberId INT,
     StaffID INT,
     LoanDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    DueDate TIMESTAMP NOT NULL,
-    ReturnDate DATETIME DEFAULT NULL,
+    DueDate TIMESTAMP NOT NULL CHECK (DueDate > LoanDate),
+    ReturnDate DATETIME DEFAULT NULL CHECK (ReturnDate IS NULL OR ReturnDate >= LoanDate),
     PRIMARY KEY (LoanId),
     FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE CASCADE,
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE CASCADE,
