@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fine Queries</title>
+    <title>Reservation Queries</title>
     <link rel="stylesheet" href="https://bootswatch.com/5/pulse/bootstrap.min.css" />
     <style>
       .content-section {
@@ -66,7 +66,7 @@
       <div class="container">
         <div class="feature-box">
           <h2>Fine Queries</h2>
-          <p>Enter a parameter (optional) and select a query to view fine-related data:</p>
+          <p>Enter a parameter (optional) and select a query to view reservation-related data:</p>
 
           <!-- Parameter Input -->
           <div class="mb-3">
@@ -76,8 +76,8 @@
 
           <!-- Query Buttons -->
           <div class="mb-3">
-            <button class="btn" id="btnViewFines">View Fines</button>
-            <button class="btn" id="btnPopularBooksWithFees">View Popular Books With Outstanding Fees</button>
+            <button class="btn" id="btnViewReservations">View Reservations</button>
+            <button class="btn" id="btnViewNonborrow">View Reserved, Non-borrowed Books</button>
        
           </div>
 
@@ -149,13 +149,13 @@
         };
 
         // Button Event Listeners
-        document.getElementById("btnViewFines").addEventListener("click", () => {
-          fetchAndDisplay("/fines", ["Fine ID", "Loan ID", "Fine Amount", "Fine Status", "Payment Date", "Member ID", "Member Name", " Member Email", "Member Phonenumber"], ["FineID", "LoanID", "FineAmount", "FineStatus", "PaymentDate", "MemberID", "MemberName", "Email", "PhoneNumber"]);
+        document.getElementById("btnViewReservations").addEventListener("click", () => {
+          fetchAndDisplay("/reservations", ["Reservation ID", "Member Name", "Book Title", "Reservation Date", "Status"], ["ReservationID", "MemberName", "BookTitle", "ReservationDate", "Status"]);
         });
 
         // Button Event Listeners
-        document.getElementById("btnPopularBooksWithFees").addEventListener("click", () => {
-          fetchAndDisplay("/fines/popularBooksByFee", ["Book Title", "Borrow Count"], ["BookTitle", "BorrowCount"]);
+        document.getElementById("btnViewNonborrow").addEventListener("click", () => {
+          fetchAndDisplay("/reservations/reservedNeverBorrowed", ["Book Title"], ["BookTitle"]);
         });
 
      

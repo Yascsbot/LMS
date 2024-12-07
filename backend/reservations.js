@@ -5,7 +5,7 @@ function getAllReservations(req, res) {
     R.ReservationID,
     M.Name AS MemberName,
     B.Title AS BookTitle,
-    R.ReservationDate,
+    DATE_FORMAT(R.ReservationDate, '%m-%d-%Y') AS ReservationDate,
     R.Status
 FROM Reservations R
 JOIN Members M ON R.MemberID = M.MemberID

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fine Queries</title>
+    <title>Staff Queries</title>
     <link rel="stylesheet" href="https://bootswatch.com/5/pulse/bootstrap.min.css" />
     <style>
       .content-section {
@@ -52,49 +52,26 @@
             <li class="nav-item">
               <a class="nav-link" href="reservations.html">Reservations</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="staff.html">Staff</a>
+            </li>
           </ul>
         </div>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link me-4" href="staff.html">Contact</a>
-          </li>
-        </ul>
       </div>
     </nav>
+
     <!-- Main Content -->
     <div class="content-section">
       <div class="container">
         <div class="feature-box">
-          <h2>Fine Queries</h2>
-          <p>Enter a parameter (optional) and select a query to view fine-related data:</p>
-
-          <!-- Parameter Input -->
-          <div class="mb-3">
-            <label for="queryParameter" class="form-label">Parameter (e.g., Member Name):</label>
-            <input type="text" id="queryParameter" class="form-control" placeholder="Enter parameter (optional)" />
-          </div>
+          <h2>Staff Queries</h2>
+          <p>Select a query to view staff-related data:</p>
 
           <!-- Query Buttons -->
           <div class="mb-3">
-            <button class="btn" id="btnViewFines">View Fines</button>
-            <button class="btn" id="btnPopularBooksWithFees">View Popular Books With Outstanding Fees</button>
-       
+            <button class="btn" id="btnViewStaff">View Staff</button>
           </div>
 
-          <div class="mt-4">
-            <table class="table table-bordered table-striped">
-              <thead class="table-dark">
-                <tr id="tableHeaders">
-                  <!-- Dynamic table headers -->
-                </tr>
-              </thead>
-              <tbody id="resultsTableBody">
-                <!-- Dynamic rows populated here -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Results Table -->
           <div class="mt-4">
             <table class="table table-bordered table-striped">
               <thead class="table-dark">
@@ -118,19 +95,15 @@
       document.addEventListener("DOMContentLoaded", () => {
         const resultsTableBody = document.getElementById("resultsTableBody");
         const tableHeaders = document.getElementById("tableHeaders");
-        const queryParameter = document.getElementById("queryParameter");
 
-        // Function to fetch and display data based on query
+        // Function to fetch and display data
         const fetchAndDisplay = async (endpoint, headers, keyMappings) => {
           try {
-            // Get parameter value
-            const parameterValue = queryParameter.value.trim();
-            const queryParam = parameterValue ? `?Name=${encodeURIComponent(parameterValue)}` : "";
-            const response = await fetch(endpoint + queryParam);
+            const response = await fetch(endpoint);
             const data = await response.json();
 
             if (data.length === 0) {
-              alert("No data found for the given parameter.");
+              alert("No data found.");
               return;
             }
             // Update table headers
@@ -143,24 +116,19 @@
               resultsTableBody.innerHTML += `<tr>${rowHtml}</tr>`;
             });
           } catch (error) {
-            console.error(`Error fetching data from ${endpoint}:`, error);
+            console.error("Error fetching data:", error);
             resultsTableBody.innerHTML = `<tr><td colspan="${headers.length}">Failed to load data. Please try again later.</td></tr>`;
           }
         };
 
-        // Button Event Listeners
-        document.getElementById("btnViewFines").addEventListener("click", () => {
-          fetchAndDisplay("/fines", ["Fine ID", "Loan ID", "Fine Amount", "Fine Status", "Payment Date", "Member ID", "Member Name", " Member Email", "Member Phonenumber"], ["FineID", "LoanID", "FineAmount", "FineStatus", "PaymentDate", "MemberID", "MemberName", "Email", "PhoneNumber"]);
+        // Button Event Listener for View Staff
+        document.getElementById("btnViewStaff").addEventListener("click", () => {
+          fetchAndDisplay(
+            "/staff",
+            ["Staff ID", "Name", "Email", "Role", "Username"], // Table Headers
+            ["StaffID", "Name", "Email", "Role", "Username"] // Data Keys
+          );
         });
-
-        // Button Event Listeners
-        document.getElementById("btnPopularBooksWithFees").addEventListener("click", () => {
-          fetchAndDisplay("/fines/popularBooksByFee", ["Book Title", "Borrow Count"], ["BookTitle", "BorrowCount"]);
-        });
-
-     
-   
-
       });
     </script>
   </body>

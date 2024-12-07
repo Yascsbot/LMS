@@ -42,8 +42,7 @@ app.get("/staff", staffBackend.getAllStaff);
 
 // // Reservations routes
 app.get("/reservations", reservationsBackend.getAllReservations);
-app.get(
-  "/reservations/reservedNeverBorrowed",
+app.get("/reservations/reservedNeverBorrowed",
   reservationsBackend.getReservedBooksNeverBorrowed
 );
 
