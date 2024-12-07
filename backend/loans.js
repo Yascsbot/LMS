@@ -11,9 +11,11 @@ function getAllLoans(req, res) {
         DATE_FORMAT( L.DueDate, '%m-%d-%Y') AS DueDate,
         DATE_FORMAT( L.ReturnDate, '%m-%d-%Y') AS ReturnDate
     FROM 
-        Loans L
+        LOANS L
     JOIN 
-        Books B ON L.BookID = B.BookID
+        BOOK_INVENTORY BI ON L.BookID = BI.BookID
+    JOIN
+        BOOKS_DETAILS B ON BI.ISBN = B.ISBN
     JOIN 
         Members M ON L.MemberID = M.MemberID;
         `;

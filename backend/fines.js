@@ -6,11 +6,15 @@ function getAllFines(req, res) {
     M.MemberID,
     F.LoanID,
     F.FineAmount,
-    F.PaymentDate,
+    DATE_FORMAT(F.PaymentDate, '%m-%d-%Y') AS PaymentDate
     FS.FineStatus,
     M.Name AS MemberName,
     M.Email,
-    M.PhoneNumber
+      CONCAT(
+        SUBSTRING(M.PhoneNumber, 1, 3), '-', 
+        SUBSTRING(M.PhoneNumber, 4, 3), '-', 
+        SUBSTRING(M.PhoneNumber, 7, 4)
+      ) AS PhoneNumber
 FROM FINES F
 JOIN FINE_STATUS FS ON F.FineID = FS.FineID
 JOIN MEMBERS M ON F.MemberID = M.MemberID;`;
@@ -38,6 +42,7 @@ function getPopularBooksByFee(req, res) {
         GROUP BY L.BookId
         ORDER BY BorrowCount DESC;
         `;
+        
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
