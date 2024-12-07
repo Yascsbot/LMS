@@ -70,7 +70,7 @@
 
           <!-- Parameter Input -->
           <div class="mb-3">
-            <label for="queryParameter" class="form-label">Parameter (e.g., Book Name):</label>
+            <label for="queryParameter" class="form-label">Parameter (e.g., Member name):</label>
             <input type="text" id="queryParameter" class="form-control" placeholder="Enter parameter (optional)" />
           </div>
 
@@ -155,7 +155,7 @@
 
         // Button Event Listener for Employee Count by Department
         document.getElementById("btnRecentLoans").addEventListener("click", () => {
-          fetchAndDisplay("/loans/recent", ["Member Name", "Book Title"], ["Member Name", "Book Title"]);
+          fetchAndDisplay("/loans/recent", ["Member Name", "Book Title"], ["MemberName", "BookTitle"]);
         });
         document.getElementById("btnOverDueLoans").addEventListener("click", () => {
           fetchAndDisplay("/loans/overdue", ["Book Title","Author", "Member Name", "Staff Name", "Staff Role" ], ["BookTitle","Author", "MemberName", "StaffName", "StaffRole"]);

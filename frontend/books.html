@@ -150,7 +150,7 @@
 
         // Button Event Listeners
         document.getElementById("btnBookSpecs").addEventListener("click", () => {
-          fetchAndDisplay("/books", ["BookID", "Title", "ISBN", "Genre", "Publication Date", "Available Copies", "Total Copies"], ["BookID", "Title", "ISBN", "Genre", "PublicationDate", "AvailableCopies", "TotalCopies"]);
+          fetchAndDisplay("/books", [ "Title", "ISBN", "Genre", "Publication Date", "Available Copies", "Total Copies"], ["Title", "ISBN", "Genre", "PublicationDate", "AvailableCopies", "TotalCopies"]);
         });
 
         // Button Event Listener for Employee Count by Department
