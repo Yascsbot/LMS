@@ -93,7 +93,7 @@ function getBooksWithReservationStatus(req, res) {
     FROM BOOKS_DETAILS BD
     LEFT JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
     LEFT JOIN RESERVATIONS R ON BI.BookID = R.BookID
-    WHERE (? IS NULL OR B.Title LIKE CONCAT('%', ?, '%'))
+    WHERE (? IS NULL OR BD.Title LIKE CONCAT('%', ?, '%'))
     ORDER BY ReservationStatus ASC
   `;
 
