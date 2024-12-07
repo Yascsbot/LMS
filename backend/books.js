@@ -15,7 +15,7 @@ function getAllbooks(req, res) {
         DATE_FORMAT(PublicationDate, '%m-%d-%Y') AS PublicationDate,
         AvailableCopies,
         TotalCopies
-    FROM BOOK_DETAILS
+    FROM BOOKS_DETAILS
   `;
 
   // Array to hold query parameters
