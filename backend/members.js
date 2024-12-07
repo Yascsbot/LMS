@@ -17,7 +17,7 @@ function getAllMembers(req, res) {
         MembershipType,
         DATE_FORMAT(JoinDate, '%m-%d-%Y') AS JoinDate
     FROM 
-        Members `; // Note the space after "Members"
+        MEMBERS `; // Note the space after "Members"
 
   // Array to hold query parameters
   const params = [];
