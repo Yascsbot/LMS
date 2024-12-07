@@ -8,15 +8,14 @@ function getAllbooks(req, res) {
   // Base query
   let query = `
     SELECT 
-        BookID,
+        ISBN,
         Title,
         Author,
-        ISBN,
         Genre,
         DATE_FORMAT(PublicationDate, '%m-%d-%Y') AS PublicationDate,
         AvailableCopies,
         TotalCopies
-    FROM Books
+    FROM BOOK_DETAILS
   `;
 
   // Array to hold query parameters
@@ -48,14 +47,15 @@ function getBorrowedBooks(req, res) {
   // Base query
   let query = `
         SELECT 
-            BOOKS.Title, 
-            BOOKS.Author, 
-            MEMBERS.Name AS MemberName,  
-            DATE_FORMAT(LOANS.LoanDate, '%m-%d-%Y') AS LoanDate,  
-            DATE_FORMAT(LOANS.ReturnDate, '%m-%d-%Y') AS ReturnDate
-        FROM LOANS
-        JOIN BOOKS ON LOANS.BookID = BOOKS.BookID
-        JOIN MEMBERS ON LOANS.MemberID = MEMBERS.MemberID
+            BD.Title, 
+            BD.Author, 
+            M.Name AS MemberName,  
+            DATE_FORMAT(L.LoanDate, '%m-%d-%Y') AS LoanDate,  
+            DATE_FORMAT(L.ReturnDate, '%m-%d-%Y') AS ReturnDate
+        FROM LOANS L
+        JOIN BOOK_INVENTORY BI ON L.BookID = BI.BookID
+        JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN
+        JOIN MEMBERS M ON L.MemberID = M.MemberID
     `;
 
   // Array to hold query parameters
@@ -63,12 +63,12 @@ function getBorrowedBooks(req, res) {
 
   // Add filtering condition if Title is provided
   if (Title) {
-    query += `WHERE BOOKS.Title LIKE ? `;
+    query += `WHERE BD.Title LIKE ? `;
     params.push(`%${Title}%`);
   }
 
   // Add ordering logic
-  query += `ORDER BY BOOKS.Title ASC, LOANS.LoanDate ASC;`;
+  query += `ORDER BY BD.Title ASC, L.LoanDate ASC;`;
 
   // Execute the query
   db.query(query, params, (err, results) => {
@@ -84,53 +84,31 @@ function getBorrowedBooks(req, res) {
 
 // Query 4: List all books with their reservation status
 function getBooksWithReservationStatus(req, res) {
-  // Extract the Title parameter from the query
   const { Title } = req.query;
 
-  // Base query
-  let query = `
-    SELECT B.Title, R.Status AS ReservationStatus
-    FROM BOOKS B
-    LEFT JOIN RESERVATIONS R ON B.BookID = R.BookID
-    UNION
-    SELECT B.Title, R.Status AS ReservationStatus
-    FROM BOOKS B
-    RIGHT JOIN RESERVATIONS R ON B.BookID = R.BookID
+  const query = `
+    SELECT 
+        B.Title, 
+        IFNULL(R.Status, 'No Reservation') AS ReservationStatus
+    FROM BOOKS_DETAILS BD
+    LEFT JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+    LEFT JOIN RESERVATIONS R ON BI.BookID = R.BookID
+    WHERE (? IS NULL OR B.Title LIKE CONCAT('%', ?, '%'))
+    ORDER BY ReservationStatus ASC
   `;
 
-  // Array to hold query parameters
-  const params = [];
+  const params = [Title || null, Title || null];
 
-  // Add filtering condition if Title is provided
-  if (Title) {
-    query = `
-      SELECT B.Title, R.Status AS ReservationStatus
-      FROM BOOKS B
-      LEFT JOIN RESERVATIONS R ON B.BookID = R.BookID
-      WHERE B.Title LIKE ? 
-      UNION
-      SELECT B.Title, R.Status AS ReservationStatus
-      FROM BOOKS B
-      RIGHT JOIN RESERVATIONS R ON B.BookID = R.BookID
-      WHERE B.Title LIKE ?
-    `;
-    params.push(`%${Title}%`, `%${Title}%`);
-  }
-
-  // Add ordering logic
-  query += `ORDER BY ReservationStatus ASC;`;
-
-  // Execute the query
   db.query(query, params, (err, results) => {
     if (err) {
       console.error("Error fetching books with reservation status:", err);
       return res.status(500).json({ error: "Error fetching books with reservation status" });
     }
 
-    // Return the results as JSON
     res.json(results);
   });
 }
+
 
 
 module.exports = {
