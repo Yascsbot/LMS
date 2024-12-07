@@ -65,7 +65,10 @@ CREATE TABLE MEMBERS (
     PRIMARY KEY (MemberId),
     UNIQUE (Email),
     UNIQUE (PhoneNumber),
-    CHECK (CHAR_LENGTH(PhoneNumber) = 10 OR PhoneNumber IS NULL)
+    CHECK (
+        CHAR_LENGTH(PhoneNumber) = 10
+        OR PhoneNumber IS NULL
+    )
 );
 
 -- --------------------------------------------------------
@@ -93,7 +96,10 @@ CREATE TABLE LOANS (
     StaffID INT,
     LoanDate TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     DueDate TIMESTAMP NOT NULL CHECK (DueDate > LoanDate),
-    ReturnDate DATETIME DEFAULT NULL CHECK (ReturnDate IS NULL OR ReturnDate >= LoanDate),
+    ReturnDate DATETIME DEFAULT NULL CHECK (
+        ReturnDate IS NULL
+        OR ReturnDate >= LoanDate
+    ),
     PRIMARY KEY (LoanId),
     FOREIGN KEY (BookId) REFERENCES BOOK_INVENTORY(BookId) ON DELETE CASCADE,
     FOREIGN KEY (MemberId) REFERENCES MEMBERS(MemberId) ON DELETE CASCADE,
