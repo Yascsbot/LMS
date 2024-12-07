@@ -88,7 +88,7 @@ function getBooksWithReservationStatus(req, res) {
 
   const query = `
     SELECT 
-        B.Title, 
+        BD.Title, 
         IFNULL(R.Status, 'No Reservation') AS ReservationStatus
     FROM BOOKS_DETAILS BD
     LEFT JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
