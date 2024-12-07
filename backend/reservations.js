@@ -4,12 +4,13 @@ function getAllReservations(req, res) {
     SELECT 
     R.ReservationID,
     M.Name AS MemberName,
-    B.Title AS BookTitle,
+    BD.Title AS BookTitle,
     DATE_FORMAT(R.ReservationDate, '%m-%d-%Y') AS ReservationDate,
     R.Status
-FROM Reservations R
-JOIN Members M ON R.MemberID = M.MemberID
-JOIN Books B ON R.BookID = B.BookID;
+FROM RESERVATIONS R
+JOIN MEMBERS M ON R.MemberID = M.MemberID
+JOIN BOOK_INVENTORY BI ON R.BookID = BI.BookID
+JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN;
 `;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -20,9 +21,10 @@ JOIN Books B ON R.BookID = B.BookID;
 // Query 5: Find books that are currently reserved but have never been borrowed
 function getReservedBooksNeverBorrowed(req, res) {
   const query = `
-        SELECT B.Title AS BookTitle
-        FROM BOOKS B
-        JOIN RESERVATIONS R ON B.BookID = R.BookID
+        SELECT BD.Title AS BookTitle
+        FROM BOOKS_DETAILS BD
+        JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
+        JOIN RESERVATIONS R ON BI.BookID = R.BookID
         WHERE R.Status = 'Pending'
         AND B.BookID IN (
             SELECT BookID
@@ -31,7 +33,7 @@ function getReservedBooksNeverBorrowed(req, res) {
             SELECT BookID
             FROM LOANS
         )
-        ORDER BY B.Title ASC;
+        ORDER BY BD.Title ASC;
     `;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
