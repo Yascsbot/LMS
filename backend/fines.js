@@ -6,7 +6,7 @@ function getAllFines(req, res) {
     M.MemberID,
     F.LoanID,
     F.FineAmount,
-    DATE_FORMAT(F.PaymentDate, '%m-%d-%Y') AS PaymentDate
+    DATE_FORMAT(F.PaymentDate, '%m-%d-%Y') AS PaymentDate,
     FS.FineStatus,
     M.Name AS MemberName,
     M.Email,

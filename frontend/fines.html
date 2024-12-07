@@ -150,7 +150,7 @@
 
         // Button Event Listeners
         document.getElementById("btnViewFines").addEventListener("click", () => {
-          fetchAndDisplay("/fines", ["Fine ID", "Loan ID", "Fine Amount", "Fine Status", "Payment Date", "Member ID", "Member Name", " Member Email", "Member Phonenumber"], ["FineID", "LoanID", "FineAmount", "FineStatus", "PaymentDate", "MemberID", "MemberName", "Email", "PhoneNumber"]);
+          fetchAndDisplay("/fines", ["Fine ID", "Member ID", "Loan ID", "Fine Amount", "Payment Date", "Fine Status", "Member Name", "Email", "Phone Number"], ["FineID", "MemberID", "LoanID", "FineAmount", "PaymentDate", "FineStatus", "MemberName", "Email", "PhoneNumber"]);
         });
 
         // Button Event Listeners
