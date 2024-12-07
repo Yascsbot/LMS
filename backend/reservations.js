@@ -10,7 +10,7 @@ function getAllReservations(req, res) {
 FROM RESERVATIONS R
 JOIN MEMBERS M ON R.MemberID = M.MemberID
 JOIN BOOK_INVENTORY BI ON R.BookID = BI.BookID
-JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN;
+JOIN BOOKS_DETAILS BD ON BI.ISBN = BD.ISBN
 `;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -26,14 +26,14 @@ function getReservedBooksNeverBorrowed(req, res) {
         JOIN BOOK_INVENTORY BI ON BD.ISBN = BI.ISBN
         JOIN RESERVATIONS R ON BI.BookID = R.BookID
         WHERE R.Status = 'Pending'
-        AND B.BookID IN (
+        AND BI.BookID IN (
             SELECT BookID
             FROM RESERVATIONS
             EXCEPT
             SELECT BookID
             FROM LOANS
         )
-        ORDER BY BD.Title ASC;
+        ORDER BY BD.Title ASC
     `;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
