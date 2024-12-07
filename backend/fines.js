@@ -37,6 +37,7 @@ function getPopularBooksByFee(req, res) {
         GROUP BY L.BookId
         ORDER BY BorrowCount DESC;
         `;
+        
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
