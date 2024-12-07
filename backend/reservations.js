@@ -75,7 +75,6 @@ function getReservedBooksNeverBorrowed(req, res) {
       console.error("Error fetching reserved books that have never been borrowed:", err);
       return res.status(500).json({ error: "Error fetching reserved books that have never been borrowed" });
     }
-    console.log("Query Results:", results);
     res.json(results);
   });
 }
