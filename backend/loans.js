@@ -53,7 +53,7 @@ function getOverdueLoanDetails(req, res) {
         JOIN LOANS L ON BI.BookId = L.BookId
         JOIN MEMBERS M ON L.MemberId = M.MemberId
         JOIN STAFF S ON L.StaffId = S.StaffId
-        WHERE B.BookId = L.BookId
+        WHERE BI.BookId = L.BookId
           AND L.MemberId = M.MemberId
           AND L.StaffId = S.StaffId
           AND L.DueDate < CURRENT_DATE
