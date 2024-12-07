@@ -65,12 +65,12 @@
     <div class="content-section">
       <div class="container">
         <div class="feature-box">
-          <h2>Fine Queries</h2>
+          <h2>Reservation  Queries</h2>
           <p>Enter a parameter (optional) and select a query to view reservation-related data:</p>
 
           <!-- Parameter Input -->
           <div class="mb-3">
-            <label for="queryParameter" class="form-label">Parameter (e.g., Member Name):</label>
+            <label for="queryParameter" class="form-label">Parameter (e.g., Book Name):</label>
             <input type="text" id="queryParameter" class="form-control" placeholder="Enter parameter (optional)" />
           </div>
 
@@ -125,7 +125,7 @@
           try {
             // Get parameter value
             const parameterValue = queryParameter.value.trim();
-            const queryParam = parameterValue ? `?Name=${encodeURIComponent(parameterValue)}` : "";
+            const queryParam = parameterValue ? `?Title=${encodeURIComponent(parameterValue)}` : "";
             const response = await fetch(endpoint + queryParam);
             const data = await response.json();
 
