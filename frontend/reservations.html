@@ -65,7 +65,7 @@
     <div class="content-section">
       <div class="container">
         <div class="feature-box">
-          <h2>Fine Queries</h2>
+          <h2>Reservation Queries</h2>
           <p>Enter a parameter (optional) and select a query to view reservation-related data:</p>
 
           <!-- Parameter Input -->
@@ -155,7 +155,7 @@
 
         // Button Event Listeners
         document.getElementById("btnViewNonborrow").addEventListener("click", () => {
-          fetchAndDisplay("/reservations/reservedNeverBorrowed", ["Book Title"], ["BookTitle"]);
+          fetchAndDisplay("/reservations/reservedNeverBorrowed", ["Book Title"], ["Title"]);
         });
 
      
